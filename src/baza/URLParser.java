@@ -24,71 +24,10 @@ public class URLParser {
 			e.printStackTrace();
 		}
 	}
-   void parseTable(){
-	   try{
-	   Element table = doc.select("table").get(2);
-	   Elements rows = table.select("tr");
-	   for (int i = 1; i < rows.size()-1; i++) {
-		   Element row = rows.get(i);
-	       Elements cols = row.select("td");
-	       Matcher m = Pattern.compile("\\<td>([^)]+)\\</td>").matcher(cols.get(3).toString());
-	       //System.out.println(cols.get(3).text());
-	       String a = cols.get(1).text().toString();
-	       String z = cols.get(2).text().replaceAll(",", "");
-	       if(mapa.get(a) != null){
-	    	  int sum = mapa.get(a)+Integer.parseInt(z);
-	    	  mapa.put(a, sum);
-	       }
-	       else mapa.put(a, Integer.parseInt(z));
-	   }
-	   
-	   }catch (Exception e){
-		   e.printStackTrace();
-	   }
-   }
- 
-   void toDB(){
-	   BazaConnection polacz = new BazaConnection();
-	   int size = mapa.size();
-	   int i = 0;
-
-	   try{
-		   polacz.myConn.setAutoCommit(false);
-		   PreparedStatement myStmt = polacz.myConn.prepareStatement("insert into imionam(name,nr) values (?,?) on duplicate key update nr=values(nr)");
-		   for (String a : mapa.keySet()){
-			   myStmt.setString(1, a);
-			   myStmt.setInt(2, mapa.get(a));
-			   myStmt.addBatch();
-		   }
-		   myStmt.executeBatch();
-		   polacz.myConn.commit();
-		   System.out.println("enx");
-	   }catch (Exception e){
-		   e.printStackTrace();
-	   }
-	   
-   }
+  
 	
 }
-class ShowProgress implements Runnable{
-    public int i;
-    int max;
-    ShowProgress(int i, int max){
-        this.i = i;
-        this.max = max;
-    }
-    @Override public void run(){
-        while(i<max){
-            System.out.println (i + " / " + max);
-            try{
-                  Thread.sleep(1000);
-            } catch(Exception e){
-                
-            }
-        }
-  
-    }
-}
+
 class RedditParser extends URLParser{
 	ArrayList<Link> urls;
 
