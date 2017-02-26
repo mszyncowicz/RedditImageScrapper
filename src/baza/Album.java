@@ -409,10 +409,9 @@ public class Album{
 		vbox.setMaxWidth(500);
 		//layout.getChildren().add(layout);
 		if (this.isAlbum){
-		hbox.getChildren().add(button2);
-		hbox.getChildren().add(vbox);
-		hbox.getChildren().add(button1);
-		hbox.getChildren().add(like);
+			hbox.getChildren().add(button2);
+			hbox.getChildren().add(vbox);
+			hbox.getChildren().add(button1);
 		} else hbox.getChildren().add(vbox);
 		
 		
