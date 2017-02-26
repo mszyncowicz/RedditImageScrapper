@@ -5,6 +5,7 @@ import java.net.URL;
 
 import org.apache.commons.io.FileUtils;
 
+import javafx.scene.input.ClipboardContent;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -18,9 +19,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -329,7 +333,7 @@ public class Album{
 
 				}
 			});
-			
+			e.consume();
 		});
 		
 		download.setText("\u25BC");
@@ -371,8 +375,12 @@ public class Album{
 					
 				}
 			});
+			e.consume();
 		});
-		this.viewerWrapper.setOnMouseExited(e -> this.viewerWrapper.getChildren().remove(list));
+		this.viewerWrapper.setOnMouseExited(e -> {
+			this.viewerWrapper.getChildren().remove(list);
+			e.consume();
+		});
 		
 		
 		
@@ -386,6 +394,7 @@ public class Album{
 				}
 			});
 			t.start();
+			e.consume();
 		});
 		button2.setOnAction(e -> {
 		
@@ -397,6 +406,7 @@ public class Album{
 				}
 			});
 			t.start();
+			e.consume();
 		});
 
 		
@@ -460,6 +470,7 @@ public class Album{
 			            ed.printStackTrace();
 			        }
 				}
+				e.consume();
 			});
 		}else{
 			this.viewerWrapper.prefHeightProperty().bind(this.viewer.fitHeightProperty());
@@ -502,10 +513,13 @@ public class Album{
 			 	 }
 			 	 
 			 	 
-			
+				e.consume();
 			});
 			
 		}
+		this.viewerWrapper.setOnDragDetected(e->{
+			e.consume();
+		});
 		hbox.setPadding(new Insets(0,0,0,0));
 		vbox.setPadding(new Insets(0,0,0,0));
 		box = hbox;

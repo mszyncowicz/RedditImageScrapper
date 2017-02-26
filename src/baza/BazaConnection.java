@@ -13,6 +13,7 @@ public class BazaConnection {
 			stat = myConn.createStatement();
 			stat.execute("PRAGMA foreign_keys=ON");
 			myConn.setAutoCommit(true);
+			createAll();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -26,6 +27,7 @@ public class BazaConnection {
 			stat.execute("create table if not exists folder(id integer primary key autoincrement, nazwa varchar(255) unique)");
 			stat.execute("create table if not exists album(id integer primary key autoincrement, title varchar(255), data datetime DEFAULT CURRENT_TIMESTAMP,mainurl varchar(255), folderid integer references folder(id))");
 			stat.execute("create table if not exists zdjecie(id integer primary key autoincrement, photoUrl varchar(255) not null, albumid integer references album(id) on delete cascade)");
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -36,6 +38,7 @@ public class BazaConnection {
 			stat.execute("drop table if exists album");
 			stat.execute("drop table if exists zdjecie");
 			stat.execute("drop table if exists folder");
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -47,8 +50,10 @@ public class BazaConnection {
 		return folder;
 	}
 	ArrayList<Folder> showFolders(){
+
 		ArrayList<Folder> folders = null;
 		try {
+			stat = myConn.createStatement();
 			ResultSet allFolders = stat.executeQuery("select * from folder");
 			while(allFolders.next()){
 				String nazwa = allFolders.getString("nazwa");
@@ -61,14 +66,22 @@ public class BazaConnection {
 					folders.add(nowy);
 				}
 			}
+			allFolders.close();
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+			try{
+				stat.close();
+			}catch (Exception es) {
+				
+			}
 		}
 		return folders;
 	}
 	Folder newFolder(String name){
 		Folder nowy = null;
 		try {
+			stat = myConn.createStatement();
 			stat.execute("insert into folder(nazwa) values ('" + name + "')");
 			ResultSet generatedKeys = stat.executeQuery("SELECT last_insert_rowid()");
 			Integer id;
@@ -78,7 +91,14 @@ public class BazaConnection {
 				throw new NullPointerException();
 			}
 			nowy = new Folder(name,id);
+			generatedKeys.close();
+			stat.close();
 		} catch (Exception e) {
+			try{
+				stat.close();
+			}catch (Exception es) {
+				
+			}
 			e.printStackTrace();
 		}
 		return nowy;
@@ -86,7 +106,7 @@ public class BazaConnection {
 	Folder selectFolder(String name){
 		Folder nowy = null;
 		try {
-
+			stat = myConn.createStatement();
 			ResultSet generatedKeys = stat.executeQuery("select id from folder where nazwa = '" + name + "'");
 			Integer id;
 			if (generatedKeys.next()) {
@@ -95,6 +115,8 @@ public class BazaConnection {
 				throw new NullPointerException();
 			}
 			nowy = new Folder(name,id);
+			this.folder = nowy;
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -102,17 +124,22 @@ public class BazaConnection {
 	}
 	void deleteFolder (Folder folder){
 		try {
-			stat.execute("delete folder where id = '" + folder.id + "'");
+			stat = myConn.createStatement();
+			stat.execute("delete from folder where id = '" + folder.id + "'");
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	boolean deleteAlbum (String mainurl){
 		try {
+			stat = myConn.createStatement();
 			stat.execute("delete from album where mainurl = '" + mainurl + "'");
+			stat.close();
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
+			
 			return false;
 		}
 	}
@@ -120,7 +147,7 @@ public class BazaConnection {
 		try {
 			//najpierw album
 			photos.title = photos.title.replaceAll("'", "''");
-
+			stat = myConn.createStatement();
 			stat.execute("insert into album(title,mainurl,folderid) values ('"+ photos.title +"','"+ photos.url +"',"+ folder.id +")");
 			ResultSet generatedKeys = stat.executeQuery("SELECT last_insert_rowid()");
 			Integer id;
@@ -139,6 +166,7 @@ public class BazaConnection {
 			insert.executeBatch();
 			myConn.commit();
 			myConn.setAutoCommit(true);
+			stat.close();
 			return true;
 			//album
 			
@@ -151,12 +179,17 @@ public class BazaConnection {
 		if (folder == null) return false;
 		else{
 			try {
+				stat = myConn.createStatement();
 				ResultSet set = stat.executeQuery("SELECT id FROM album WHERE mainurl ='"+a.url+"' and folderid = "+ folder.id);
 				if (set.next()){
 					set.getInt(1);
+					stat.close();
 					return true;
 				}
-				else return false;
+				else{
+					stat.close();
+					return false;
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -167,6 +200,7 @@ public class BazaConnection {
 	ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset){
 		ArrayList<Album> albumy = null;
 		try {
+			stat = myConn.createStatement();
 			ResultSet albums = stat.executeQuery("select * from album where folderid  = " + folder.id + " order by id desc LIMIT " + limit.toString() + " OFFSET " + offset.toString());
 			while(albums.next()){
 				/*Dla ka¿dego albumu:
@@ -219,8 +253,10 @@ public class BazaConnection {
 				}
 				secondary.close();
 			}
+			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
+
 		}
 		return albumy;
 	}

@@ -8,6 +8,7 @@ import baza.RedditParser.Link;
 import javafx.scene.input.MouseButton;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.binding.BooleanBinding;
 import javafx.event.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,9 +16,13 @@ import javafx.scene.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
@@ -153,14 +158,15 @@ public class WindowScreen extends Application{
 		baza = new BazaConnection();
 		//baza.dropAll();
 		//baza.createAll();
-		baza.newFolder("folder");
-		baza.setFolder(baza.selectFolder("folder"));
+		//baza.newFolder("folder");
+		//baza.setFolder(baza.selectFolder("folder"));
 		prim = primary;
 		BetterScrollPane scroll = new BetterScrollPane();
 		BorderPane root = new BorderPane();
 		root.setCenter(scroll);
 		HBox top = new HBox();
 		top.setPadding(new Insets(5,5,5,5));
+		
 		Label link1= new Label();
 		TextField link2 = new TextField();
 		Button link3 = new Button();
@@ -168,9 +174,11 @@ public class WindowScreen extends Application{
 		link2.setPrefWidth(200);
 		link1.setText("https://www.reddit.com/r/");
 		
-		Button bookmarks = new Button("Bookmarks");
+		Button bookmarks = new Button("Show");
 		
-		top.getChildren().addAll(link1,link2,link3,bookmarks);
+		top.getChildren().addAll(link1,link2,link3);
+		top.getChildren().add(this.createBookmarkMenu(baza,bookmarks));
+		top.getChildren().add(bookmarks);
 		bookmarks.setAlignment(Pos.CENTER_RIGHT);
 		top.setAlignment(Pos.TOP_CENTER);
 		link3.setOnAction(e -> this.startParsing(scroll, link2.getText()));
@@ -411,16 +419,148 @@ public class WindowScreen extends Application{
 	void buttonAction(){
 		
 	}
-	public void setText(final String[] newText) {
-	    
-	}
-	Menu createBookmarkMenu(DatabaseImages dbimg){
-		Menu menuFolder = new Menu ("Folders");
+	MenuBar createBookmarkMenu(BazaConnection baza, Button bookmarks){
+		MenuBar menuFolder = new MenuBar ();
+		Menu menuFile = new Menu("Bookmarks");
+		menuFolder.getMenus().addAll(menuFile);
+		SeparatorMenuItem separator = new SeparatorMenuItem();
+
+		bookmarks.setDisable(true);
+		MenuItem i = new MenuItem("Add folder");
+		MenuItem j = new MenuItem("Delete folder");
+		
+		
+		
+		
+		menuFile.getItems().addAll(i,j,separator);
+		ArrayList<Folder> folders = baza.showFolders();
+		ArrayList<MenuItem> items = new ArrayList<>();
+		for (Folder ba : folders){
+			CheckMenuItem d = new CheckMenuItem(ba.nazwa);
+			d.setOnAction(e-> {
+				if (d.isSelected()){
+					
+					for (MenuItem za : menuFile.getItems()){
+						if (za instanceof CheckMenuItem){
+							CheckMenuItem dwa = (CheckMenuItem)za;
+							dwa.setSelected(false);
+						}
+					}
+					
+					baza.setFolder(ba);
+					bookmarks.setDisable(false);
+					d.setSelected(true);
+				}else{
+					baza.setFolder(null);
+					bookmarks.setDisable(true);
+					d.setSelected(false);
+				}
+				e.consume();
+				});
+		
+			items.add(d);
+		}
+		i.setOnAction(e->{
+			Stage stage = new Stage();
+			TextField name = new TextField("Inser unique folder name");
+			Button go = new Button("Add");
+			HBox root = new HBox();
+			root.getChildren().addAll(name,go);
+			go.setOnAction(f->{
+				Platform.runLater(new Runnable() {
+					public void run() {
+						Folder nowy = baza.newFolder(name.getText());
+						CheckMenuItem d = new CheckMenuItem(nowy.nazwa);
+						d.setOnAction(g-> {
+							if (d.isSelected()){
+							
+								for (MenuItem za : menuFile.getItems()){
+									if (za instanceof CheckMenuItem){
+										CheckMenuItem dwa = (CheckMenuItem)za;
+										dwa.setSelected(false);
+									}
+								}
+						
+								baza.setFolder(nowy);
+								bookmarks.setDisable(false);
+								d.setSelected(true);
+							}else{
+								baza.setFolder(null);
+								bookmarks.setDisable(true);
+								d.setSelected(false);
+							}
+							g.consume();
+							});
+						menuFile.getItems().add(d);
+						stage.close();
+						f.consume();
+					}
+				});
+				
+			});
+			Scene scena = new Scene(root);
+			stage.setScene(scena);
+			stage.setResizable(false);
+			stage.show();
+			e.consume();
+		});
+		
+		j.setOnAction(e->{
+			Platform.runLater(new Runnable() {
+				public void run() {
+			if (baza.getFolder() != null){
+				String folderName = baza.getFolder().nazwa;
+				Stage stage = new Stage();
+				stage.setResizable(false);
+				TextField name = new TextField("Inser current folder name to delete");
+				Button go = new Button("Delete");
+				HBox root = new HBox();
+				root.getChildren().addAll(name,go);
+				go.setOnAction(f->{
+					
+							System.out.println(name.getText() + " " + folderName + " " + name.equals(folderName) );
+							if (name.getText().equals(folderName)){
+							
+								baza.deleteFolder(baza.getFolder());
+								baza.setFolder(null);
+						
+								MenuItem toDelete = null;
+								for (MenuItem za : menuFile.getItems()){
+									if (za instanceof CheckMenuItem){
+										if (za.getText().equals(folderName)){
+											toDelete = za;
+										}
+										
+									}
+								}
+								if (toDelete != null) menuFile.getItems().remove(toDelete);
+					
+							}
+							stage.close();
+							f.consume();
+							
+						
+					
+				
+				});
+				Scene scene = new Scene(root);
+				stage.setScene(scene);
+				stage.show();
+			}else{
+				alert("Select folder first","you have to select folder to delete it");
+			}
+			e.consume();
+				}
+			});
+		});
+		
+		menuFile.getItems().addAll(items);
 		return menuFolder;
 	}
 
 
 }
+
 
 
 class BetterScrollPane extends ScrollPane{
