@@ -34,11 +34,13 @@ import javafx.scene.media.MediaView;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import jfxtras.labs.util.event.MouseControlUtil;
 
 public class Album{
 	String[] album;
 	boolean isZoomed = false;
 	HBox box;
+	String author;
 	int current = 0;
 	Image painting;
 	ImageView paint;
@@ -267,17 +269,17 @@ public class Album{
 		});
 		url.setId("Url");
 		Label vote = null;
-		if (this.vote!= null){
+		if (this.author!= null){
 			vote = new Label();
 			
-			vote.setText(this.vote.toString());
+			vote.setText(this.author.toString());
 			vote.setId("Vote");
 			vbox.setId("Content");
 		}
 		
 		Album a = this;
 		vbox.getChildren().addAll(title);
-		if (this.vote != null){
+		if (this.author != null){
 			vbox.getChildren().addAll(vote);
 		}
 		if (!this.isVideo){
@@ -427,10 +429,10 @@ public class Album{
 		
 		hbox.setMaxSize(500, 600);
 		if (!this.isVideo){
-			this.getImageView().setOnMouseEntered(e-> hbox.setCursor(Cursor.CLOSED_HAND));
-			this.getImageView().setOnMouseExited(e-> hbox.setCursor(Cursor.DEFAULT));
+			//this.viewerWrapper.setOnMouseEntered(e-> hbox.setCursor(Cursor.CLOSED_HAND));
+			//this.viewerWrapper.setOnMouseExited(e-> hbox.setCursor(Cursor.DEFAULT));
 			
-			this.getImageView().setOnMouseClicked(e -> {
+			this.viewerWrapper.setOnMouseClicked(e -> {
 				if (!album[current].contains(".gif"))
 					this.zoom();
 				else{
@@ -517,6 +519,8 @@ public class Album{
 			});
 			
 		}
+		//MouseControlUtil.makeDraggable(this.viewerWrapper);
+		
 		this.viewerWrapper.setOnDragDetected(e->{
 			e.consume();
 		});

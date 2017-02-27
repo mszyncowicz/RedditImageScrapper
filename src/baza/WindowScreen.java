@@ -60,6 +60,7 @@ class ImagePanel{
 			a.setTitle(sz.title);
 			a.setVote(sz.vote);
 			a.setUrl(sz.url);
+			a.author = sz.author;
 			HBox s = a.getAlbumPane();
 			if (s!=null){
 				container.getChildren().add(a.getAlbumPane());
@@ -69,10 +70,13 @@ class ImagePanel{
 
 	}
 	public void addAlbum(String[] album, Link sz){
+		System.out.println( "bla " + sz.title + sz.author );
 		Album a = new Album(album,app);
 		a.setTitle(sz.title);
 		a.setVote(sz.vote);
 		a.setUrl(sz.url);
+		a.author = sz.author;
+		System.out.println(a.title + " " + a.author + " " + sz.title +" " +a.vote );
 		HBox s = a.getAlbumPane();
 		if (s!=null){
 			container.getChildren().add(a.getAlbumPane());

@@ -28,7 +28,7 @@ public class ImageParser{
 	String nextPage;
 	String redditPage;
 	String prevPage;
-	final int max = 10;
+	final int max = 5;
 	int current = 0;
 	ImageParser(WindowScreen app){
 		this.app = app;
@@ -103,7 +103,7 @@ public class ImageParser{
 			if (this.images.size() == 0) lookForMore();
 			for (int i = current; i < images.size(); i++) {
 				
-				System.out.println(images.get(i).url + 	"					" + pagenr	+ "   cur:" + current	+ " " + images.size()	);
+				System.out.println(images.get(i).title + 	"pars					" + pagenr	+ "   cur:" + current	+ " " + images.size()	);
 			if (this.panel.getView().getChildren().size() <max) {
 						//System.out.println(images.get(i).url);
 				String a = images.get(i).url;
@@ -122,9 +122,9 @@ public class ImageParser{
 					page1 = webClient.getPage(images.get(i).url);
 					parser.changeDoc(page1.getWebResponse()
 							.getContentAsString());
-					Link s = images.get(i);
+					System.out.println("przed "+images.get(i).title);
 					
-					panel.addAlbum(s.getPhoto(),images.get(i));
+					panel.addAlbum(images.get(i).getPhoto(),images.get(i));
 					current++;
 					/*
 					new Thread(new Runnable(){

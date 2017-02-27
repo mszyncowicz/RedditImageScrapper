@@ -56,11 +56,14 @@ class RedditParser extends URLParser{
 				   String a = allLinks.get(i).attr("data-url");
 				   
 				   String title = "title";
+				   String author = null;
 				   try{
 				  // title = doc.getElementsByAttributeValue("href", a).get(1).text();
+					   author = allLinks.get(i).attr("data-author");
 				   title = allLinks.get(i).select("a").get(1).text();
+				   //System.out.println(title + " " + author + " " + a);
 				   }catch (Exception e){
-						  
+						  //continue;
 
 				   }
 	
@@ -78,24 +81,24 @@ class RedditParser extends URLParser{
 
 				   }
 				   //System.out.println(vote);
-				   if (vote > 0){
+				   if (vote >= 0){
 					   if (a.contains(".jpg") || a.contains(".png") || a.contains(".gif") || a.contains(".mp4")){
 					   //System.out.println(vote);
-						   urls.add(new Link(a,vote, title));
-					   } else if (a.contains("imgur.com/a/")){
+						   urls.add(new Link(a,vote, title,author));
+					   } else if (a.contains("imgur.com/a/") || a.contains("imgur.com/gallery/")){
 						   
-						   urls.add(new ImgurAlbum(a,vote, title));
+						   urls.add(new ImgurAlbum(a,vote, title,author));
 					   }else if (a.contains("imgur")){
 
-						   urls.add(new ImgurPhoto(a,vote, title));
+						   urls.add(new ImgurPhoto(a,vote, title,author));
 					   }else if (a.contains("tumblr")){
-						   urls.add(new TumblrAlbum(a,vote, title));
+						   urls.add(new TumblrAlbum(a,vote, title,author));
 					   } else if (a.contains("gfycat.com")){
 		
-						   urls.add(new GfycatGif(a,vote, title));
+						   urls.add(new GfycatGif(a,vote, title,author));
 					   }else if(a.contains("reddit")){
 						   //System.out.println("Z³apanooooooooooooooooooooooooooooooooooooooooooooooooooooo ");
-						   urls.add(new RedUpload(a,vote, title));
+						   urls.add(new RedUpload(a,vote, title,author));
 						  // Pattern red = Pattern.compile("https:\\/\\/i.reddituploads.com\\/[0-9a-z]{2,}");
 						   //String data = allLinks.get(i).getElementsByClass("expando expando-uninitialized").attr("data-cachedhtml");
 						   //System.out.println(data);
@@ -106,7 +109,7 @@ class RedditParser extends URLParser{
 						   //}
 					   }
 					    else if (a.contains("deviantart")){
-					    	urls.add(new DeviantArt(a,vote, title));
+					    	urls.add(new DeviantArt(a,vote, title,author));
 						   
 					   }
 				   }
@@ -130,14 +133,16 @@ class RedditParser extends URLParser{
 	class Link{
 		String url;
 		String photoUrl;
-		
+		String author;
 		Integer vote;
-
 		String title;
-		Link(String url,Integer vote,String title){
+		
+		Link(String url,Integer vote,String title, String author){
 			this.url = url;
 			this.vote = vote;
 			this.title = title;
+			this.author = author;
+			System.out.println("tworze " +this.title);
 		}
 		String[] getPhoto(){
 			String[] s = new String[1];
@@ -147,15 +152,15 @@ class RedditParser extends URLParser{
 	}
 	class ImgurPhoto extends Link{
 		String photoUrl;
-		ImgurPhoto(String url,Integer vote,String title){
-			super(url,vote, title);
+		ImgurPhoto(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
 			String[] result = new String[1];
 			if(photoUrl != null)result[0] = this.photoUrl;
 			else{
-				title = doc.getElementsByClass("post-title-container").select("h1").text();
+				//title = doc.getElementsByClass("post-title-container").select("h1").text();
 				
 				Element e = doc.getElementsByAttributeValue("property", "og:image").get(0);
 				result[0] = e.attr("content");
@@ -170,14 +175,14 @@ class RedditParser extends URLParser{
 	}
 	class ImgurAlbum extends Link{
 		String[] photoUrl;
-		ImgurAlbum(String url,Integer vote,String title){
-			super(url,vote, title);
+		ImgurAlbum(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
 			if(photoUrl != null)return this.photoUrl;
 			else{
-				title = doc.getElementsByClass("post-title-container").select("h1").text();
+				//title = doc.getElementsByClass("post-title-container").select("h1").text();
 				//Elements e = doc.getElementsByClass("post-images").select("img");
 				Elements e = doc.getElementsByAttributeValue("itemtype", "http://schema.org/ImageObject");
 				Elements es = doc.getElementsByAttributeValue("itemtype", "http://schema.org/VideoObject");
@@ -195,8 +200,8 @@ class RedditParser extends URLParser{
 	}
 	class TumblrAlbum extends Link{
 		String[] photoUrl;
-		TumblrAlbum(String url,Integer vote,String title){
-			super(url,vote, title);
+		TumblrAlbum(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
@@ -217,8 +222,8 @@ class RedditParser extends URLParser{
 	}
 	class GfycatGif extends Link{
 		String photoUrl;
-		GfycatGif(String url,Integer vote,String title){
-			super(url,vote, title);
+		GfycatGif(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
@@ -238,8 +243,8 @@ class RedditParser extends URLParser{
 	}
 	class RedUpload extends Link{
 		String photoUrl;
-		RedUpload(String url,Integer vote,String title){
-			super(url,vote, title);
+		RedUpload(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
@@ -252,8 +257,8 @@ class RedditParser extends URLParser{
 	}
 	class DeviantArt extends Link{
 		String photoUrl;
-		DeviantArt(String url,Integer vote,String title){
-			super(url,vote, title);
+		DeviantArt(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
 		}
 		@Override
 		String[] getPhoto(){
