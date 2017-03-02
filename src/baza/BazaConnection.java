@@ -25,7 +25,7 @@ public class BazaConnection {
 		try {
 			
 			stat.execute("create table if not exists folder(id integer primary key autoincrement, nazwa varchar(255) unique)");
-			stat.execute("create table if not exists album(id integer primary key autoincrement, title varchar(255), data datetime DEFAULT CURRENT_TIMESTAMP,mainurl varchar(255), folderid integer references folder(id))");
+			stat.execute("create table if not exists album(id integer primary key autoincrement, title varchar(255), author varchar(32), data datetime DEFAULT CURRENT_TIMESTAMP,mainurl varchar(255), folderid integer references folder(id))");
 			stat.execute("create table if not exists zdjecie(id integer primary key autoincrement, photoUrl varchar(255) not null, albumid integer references album(id) on delete cascade)");
 			stat.close();
 		} catch (Exception e) {
@@ -148,7 +148,7 @@ public class BazaConnection {
 			//najpierw album
 			photos.title = photos.title.replaceAll("'", "''");
 			stat = myConn.createStatement();
-			stat.execute("insert into album(title,mainurl,folderid) values ('"+ photos.title +"','"+ photos.url +"',"+ folder.id +")");
+			stat.execute("insert into album(title,mainurl,author,folderid) values ('"+ photos.title +"','"+ photos.url +"','"+ photos.author +"',"+ folder.id +")");
 			ResultSet generatedKeys = stat.executeQuery("SELECT last_insert_rowid()");
 			Integer id;
 			if (generatedKeys.next()) {
@@ -215,7 +215,7 @@ public class BazaConnection {
 				Integer id = albums.getInt("id");
 				String title = albums.getString("title");
 				String url = albums.getString("mainurl");
-				
+				String author = albums.getString("author");
 				System.out.println(id+ " " + limit + " " + offset);
 
 				Integer sum = 0;
@@ -238,10 +238,77 @@ public class BazaConnection {
 					nowy = new Album(album[0],app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
+					nowy.author = author;
 				}else if(sum > 1){
 					nowy = new Album(album,app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
+					nowy.author = author;
+				}else{
+					System.out.println("Bie utworzono");
+				}
+				if (album != null && albumy != null){
+					albumy.add(nowy);
+				}else if (album != null){
+					albumy = new ArrayList<>();
+					albumy.add(nowy);
+				}
+				secondary.close();
+			}
+			stat.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+
+		}
+		return albumy;
+	}
+	ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset, String query){
+		ArrayList<Album> albumy = null;
+		try {
+			stat = myConn.createStatement();
+			ResultSet albums = stat.executeQuery(query +" LIMIT " + limit.toString() + " OFFSET " + offset.toString());
+			while(albums.next()){
+				/*Dla ka¿dego albumu:
+				 * 1. wyjmij title,mainurl
+				 * 2. Znajdz wszystkie zdjecia
+				 * 3. Utwórz obiekt album
+				 * 4. dodaj album do albumy
+				 * 
+				 * Jako ze dostep do danych bedzie raczej wolny, najlepiej zrobic limity 
+				 * Dostep bedzie przez odpowiednio zmodyfikowany parser
+				 */
+				Integer id = albums.getInt("id");
+				String title = albums.getString("title");
+				String url = albums.getString("mainurl");
+				String author = albums.getString("author");
+				System.out.println(id+ " " + limit + " " + offset);
+
+				Integer sum = 0;
+				Statement secondary = myConn.createStatement();
+				ResultSet count = secondary.executeQuery("select count(*) from zdjecie where albumid = "+ id.toString());
+				while (count.next()){
+					sum = count.getInt("count(*)");
+				}
+				count.close();
+				ResultSet photos = secondary.executeQuery("select photoUrl from zdjecie where albumid = "+ id.toString());
+				String[] album = new String[sum];
+				int i = 0;
+				
+				while(photos.next()){
+					album[i++] = photos.getString("photoUrl");
+ 				}
+		
+				Album nowy = null;
+				if (sum == 1){
+					nowy = new Album(album[0],app);
+					nowy.setTitle(title);
+					nowy.setUrl(url);
+					nowy.author = author;
+				}else if(sum > 1){
+					nowy = new Album(album,app);
+					nowy.setTitle(title);
+					nowy.setUrl(url);
+					nowy.author = author;
 				}else{
 					System.out.println("Bie utworzono");
 				}

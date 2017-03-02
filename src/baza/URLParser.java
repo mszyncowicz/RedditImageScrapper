@@ -1,7 +1,9 @@
 package baza;
+import java.net.URL;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import org.jsoup.*;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Document;
@@ -15,11 +17,15 @@ public class URLParser {
 	URLParser(){
 	}
 	URLParser(String html){
-		this.changeDoc(html);
+		this.changeDoc(html,false);
 	}
-	void changeDoc(String html){
+	void changeDoc(String html, boolean isURL){
 		try{
-			doc = Jsoup.parseBodyFragment(html);
+			if (!isURL) doc = Jsoup.parseBodyFragment(html);
+			else{
+				URL url = new URL(html);
+				doc = Jsoup.parse(url, 3000);
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}

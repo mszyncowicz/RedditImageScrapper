@@ -19,4 +19,10 @@ public class DatabaseImages {
 		else current -=max;
 		return baza.getAlbums(app,max,current-max);
 	}
+	ArrayList<Album> getAlbumyByAuthor(boolean isNext,String author){
+		
+		if(isNext)current += max;
+		else current -=max;
+		return baza.getAlbums(app,max,current-max,"select * from album where author = '"+author + "'");
+	}
 }

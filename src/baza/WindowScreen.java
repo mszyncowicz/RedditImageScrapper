@@ -17,6 +17,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -63,7 +64,8 @@ class ImagePanel{
 			a.author = sz.author;
 			HBox s = a.getAlbumPane();
 			if (s!=null){
-				container.getChildren().add(a.getAlbumPane());
+				setAuthorLink(a,s);
+				container.getChildren().add(s);
 			}
 			albums.add(a);
 			System.out.println("dodadadiadoijaeo " + albums.size());
@@ -78,8 +80,10 @@ class ImagePanel{
 		a.author = sz.author;
 		System.out.println(a.title + " " + a.author + " " + sz.title +" " +a.vote );
 		HBox s = a.getAlbumPane();
+		
 		if (s!=null){
-			container.getChildren().add(a.getAlbumPane());
+			setAuthorLink(a,s);
+			container.getChildren().add(s);
 		}
 		albums.add(a);
 		System.out.println("dodadadiadoijaeo " + albums.size());
@@ -89,9 +93,13 @@ class ImagePanel{
 			if(a != null){
 				
 				HBox s = a.getAlbumPane();
-			
+				Hyperlink author = a.getAuthorLink();
+				author.setOnAction(e->{
+					app.author = a.author;
+					app.databaseBrowser(app.scroll);
+				});
 				if (s!=null){
-					container.getChildren().add(a.getAlbumPane());
+					container.getChildren().add(s);
 				}
 				this.albums.add(a);
 				
@@ -99,6 +107,13 @@ class ImagePanel{
 			
 		}
 		
+	}
+	void setAuthorLink(Album a,HBox s){
+		Hyperlink author = a.getAuthorLink();
+		author.setOnAction(e->{
+			//app.author = a.author;
+			app.startParsing(app.scroll, a.author, true);
+		});
 	}
 	VBox getView(){
 		return this.container;
@@ -140,9 +155,11 @@ class ImagePanel{
 public class WindowScreen extends Application{
 	//showgifs;
 	final int max = 20;
+	String author;
 	ImagePanel panel;
 	BazaConnection baza;
 	boolean isNextLoaded = false;
+	BetterScrollPane scroll;
 	Thread main = Thread.currentThread();
 	ImageParser parser;
 	Stage prim;
@@ -165,7 +182,7 @@ public class WindowScreen extends Application{
 		//baza.newFolder("folder");
 		//baza.setFolder(baza.selectFolder("folder"));
 		prim = primary;
-		BetterScrollPane scroll = new BetterScrollPane();
+		scroll = new BetterScrollPane();
 		BorderPane root = new BorderPane();
 		root.setCenter(scroll);
 		HBox top = new HBox();
@@ -185,8 +202,11 @@ public class WindowScreen extends Application{
 		top.getChildren().add(bookmarks);
 		bookmarks.setAlignment(Pos.CENTER_RIGHT);
 		top.setAlignment(Pos.TOP_CENTER);
-		link3.setOnAction(e -> this.startParsing(scroll, link2.getText()));
-		bookmarks.setOnAction(e -> this.databaseBrowser(scroll));
+		link3.setOnAction(e -> this.startParsing(scroll, link2.getText(),false));
+		bookmarks.setOnAction(e -> {
+			author = null;
+			this.databaseBrowser(scroll);
+			});
 		root.setTop(top);
 
 		Scene scene = new Scene(root, 1200, 800,Color.LAVENDER);
@@ -290,7 +310,8 @@ public class WindowScreen extends Application{
 		panel.setPanel(new ImagePanel(app));
 		DatabaseImages dbimg = new DatabaseImages(this,this.baza);
 		try{
-			panel.getPanel().addAlbums(dbimg.getAlbumy(true));
+			if (author == null) panel.getPanel().addAlbums(dbimg.getAlbumy(true));
+			else panel.getPanel().addAlbums(dbimg.getAlbumyByAuthor(true,author));
 			System.out.println(dbimg.current);
 			panel.setView(panel.getPanel().getView());
 			scroll.setContent(panel.getView());
@@ -321,7 +342,8 @@ public class WindowScreen extends Application{
 				isNextLoaded = false;
 				try{
 					panel.setPanel(new ImagePanel(app));
-					panel.getPanel().addAlbums(dbimg.getAlbumy(isNext));
+					if (author == null) panel.getPanel().addAlbums(dbimg.getAlbumy(isNext));
+					else panel.getPanel().addAlbums(dbimg.getAlbumyByAuthor(isNext,author));
 				}catch(NullPointerException e){
 					alert("Riched end","There is no more images");
 				}
@@ -338,14 +360,15 @@ public class WindowScreen extends Application{
 			}
 		});
 	}
-	public void startParsing(ScrollPane scroll, String url){
+	public void startParsing(ScrollPane scroll, String url, boolean isAuthor){
 		WindowScreen ill = this;
 		if(parser!=null) parser.deleteAll();
 		this.panel = new ImagePanel(this);
 		Button b = new Button();
 		b.setText("next");
 		parser = new ImageParser(this);
-		parser.setPage(url);
+		if (!isAuthor)parser.setPage(url);
+		else parser.setAuthor(url);
 		parser.setPanel(new ImagePanel(this));
 		parser.lookFor();
 		parser.parseImages();
@@ -439,30 +462,33 @@ public class WindowScreen extends Application{
 		menuFile.getItems().addAll(i,j,separator);
 		ArrayList<Folder> folders = baza.showFolders();
 		ArrayList<MenuItem> items = new ArrayList<>();
-		for (Folder ba : folders){
-			CheckMenuItem d = new CheckMenuItem(ba.nazwa);
-			d.setOnAction(e-> {
-				if (d.isSelected()){
-					
-					for (MenuItem za : menuFile.getItems()){
-						if (za instanceof CheckMenuItem){
-							CheckMenuItem dwa = (CheckMenuItem)za;
-							dwa.setSelected(false);
+	
+		if (folders != null) {
+			for (Folder ba : folders) {
+				CheckMenuItem d = new CheckMenuItem(ba.nazwa);
+				d.setOnAction(e -> {
+					if (d.isSelected()) {
+
+						for (MenuItem za : menuFile.getItems()) {
+							if (za instanceof CheckMenuItem) {
+								CheckMenuItem dwa = (CheckMenuItem) za;
+								dwa.setSelected(false);
+							}
 						}
+
+						baza.setFolder(ba);
+						bookmarks.setDisable(false);
+						d.setSelected(true);
+					} else {
+						baza.setFolder(null);
+						bookmarks.setDisable(true);
+						d.setSelected(false);
 					}
-					
-					baza.setFolder(ba);
-					bookmarks.setDisable(false);
-					d.setSelected(true);
-				}else{
-					baza.setFolder(null);
-					bookmarks.setDisable(true);
-					d.setSelected(false);
-				}
-				e.consume();
+					e.consume();
 				});
-		
-			items.add(d);
+
+				items.add(d);
+			}
 		}
 		i.setOnAction(e->{
 			Stage stage = new Stage();

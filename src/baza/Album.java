@@ -54,6 +54,7 @@ public class Album{
 	boolean isAlbum = true;
 	Media media;
 	File f;
+	Hyperlink authorLink;
 	MediaView viewer;
 	WindowScreen app;
 	boolean isPlaying = false;
@@ -68,6 +69,8 @@ public class Album{
 				paint = new ImageView();
 				paint.setPreserveRatio(true);
 				paint.setFitWidth(500);
+				paint.maxHeight(app.prim.getHeight());
+				paint.maxWidth(app.prim.getWidth());
 			} catch (Exception e) {
 
 				current = -1;
@@ -112,6 +115,8 @@ public class Album{
 			painting = new Image(photo,true);
 			paint = new ImageView(painting);
 			paint.setPreserveRatio(true);
+			paint.maxHeight(app.prim.getHeight());
+			paint.maxWidth(app.prim.getWidth());
 			paint.setFitWidth(500);
 			//isAlbum = false;
 		}
@@ -232,13 +237,25 @@ public class Album{
 	boolean isZoomed(){
 		return isZoomed;
 	}
+	Hyperlink getAuthorLink(){
+		return this.authorLink;
+	}
 	void zoom(){
 		if(isZoomed){
 			paint.setFitWidth(500);
 			isZoomed = false;
 			System.out.println(this.album[current]);
 		}else{
-			paint.setFitWidth(this.painting.getWidth());
+			double nowaSzer = painting.getWidth();
+			double nowaWyso = painting.getHeight();
+			if (nowaSzer > paint.maxWidth(app.prim.getWidth() - 200)){
+				paint.setFitWidth(app.prim.getWidth() - 200);
+			}else if (nowaWyso > paint.maxHeight(app.prim.getHeight() - 200)){
+				paint.setFitHeight(app.prim.getHeight() - 200);
+			} else {
+				paint.setFitWidth(painting.getWidth());
+			}
+			
 			isZoomed = true;
 		}
 		
@@ -270,17 +287,17 @@ public class Album{
 		url.setId("Url");
 		Label vote = null;
 		if (this.author!= null){
-			vote = new Label();
+			authorLink = new Hyperlink();
 			
-			vote.setText(this.author.toString());
-			vote.setId("Vote");
+			authorLink.setText(this.author.toString());
+			authorLink.setId("Vote");
 			vbox.setId("Content");
 		}
 		
 		Album a = this;
 		vbox.getChildren().addAll(title);
 		if (this.author != null){
-			vbox.getChildren().addAll(vote);
+			vbox.getChildren().addAll(authorLink);
 		}
 		if (!this.isVideo){
 			this.viewerWrapper = new StackPane();

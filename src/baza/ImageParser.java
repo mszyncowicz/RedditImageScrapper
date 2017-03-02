@@ -28,6 +28,7 @@ public class ImageParser{
 	String nextPage;
 	String redditPage;
 	String prevPage;
+	boolean stop = false;
 	final int max = 5;
 	int current = 0;
 	ImageParser(WindowScreen app){
@@ -54,17 +55,21 @@ public class ImageParser{
 	void setPage(String reddit){
 		this.redditPage = "https://www.reddit.com/r/" + reddit;
 	}
+	void setAuthor(String author){
+		this.redditPage = "https://www.reddit.com/user/" + author;
+		System.out.println(author);
+	}
 	void lookFor(){
 		try {
 			page1 = webClient
-					.getPage("https://www.reddit.com/r/porn/"); //for +18 content <lenny_face>
+					.getPage("https://www.reddit.com/r/nsfw/"); //for +18 content <lenny_face>
 
 			List<HtmlForm> forms = page1.getForms();
 			HtmlForm form = forms.get(0);
 			HtmlButton button = form.getButtonsByName("over18").get(1);
 			page1 = button.click();
 			page1 = webClient.getPage(this.redditPage);
-			parser.changeDoc(page1.getWebResponse().getContentAsString());
+			parser.changeDoc(page1.getWebResponse().getContentAsString(),false);
 			images = parser.parseImages();
 			nextPage = parser.nextPage();
 			System.out.println(nextPage + " " + page1.getUrl());
@@ -80,9 +85,13 @@ public class ImageParser{
 			pagenr++; //test
 			this.prevPage = page1.getUrl().toString();
 			page1 = webClient.getPage(this.nextPage);
-			parser.changeDoc(page1.getWebResponse().getContentAsString());
+			parser.changeDoc(page1.getWebResponse().getContentAsString(),false);
 			images = parser.parseImages();
-			nextPage = parser.nextPage();
+			try{
+				nextPage = parser.nextPage();
+			}catch(Exception e){
+				stop = true;
+			}
 			System.out.println(nextPage + " " +current);
 		} catch(NullPointerException x){}
 		catch (Exception e) {
@@ -99,7 +108,11 @@ public class ImageParser{
 	void parseImages(){
 
 		try {
+			try{
 			System.out.println("s" + current + " " + images.size());
+			}catch (NullPointerException e){
+				stop = true;
+			}
 			if (this.images.size() == 0) lookForMore();
 			for (int i = current; i < images.size(); i++) {
 				
@@ -119,9 +132,8 @@ public class ImageParser{
 					this.panel.addAlbum(a,images.get(i));
 					current++;
 				} else if (images.get(i) instanceof ImgurPhoto || images.get(i) instanceof ImgurAlbum || images.get(i) instanceof TumblrAlbum || images.get(i) instanceof DeviantArt) {
-					page1 = webClient.getPage(images.get(i).url);
-					parser.changeDoc(page1.getWebResponse()
-							.getContentAsString());
+					//page1 = webClient.getPage(images.get(i).url);
+					parser.changeDoc(images.get(i).url,true);
 					System.out.println("przed "+images.get(i).title);
 					
 					panel.addAlbum(images.get(i).getPhoto(),images.get(i));
@@ -147,9 +159,10 @@ public class ImageParser{
 					if(images.get(i).url.contains(".webm")){
 						images.get(i).url = images.get(i).url.substring(0, images.get(i).url.length()-5);
 					}
-				  page1 = webClient.getPage(images.get(i).url);
+				  /*page1 = webClient.getPage(images.get(i).url);
 					parser.changeDoc(page1.getWebResponse()
-							.getContentAsString());
+							.getContentAsString()); */
+					parser.changeDoc(images.get(i).url,true);
 				 // images.get(i).getPhoto();
 					if(images.get(i).getPhoto()!= null)panel.addAlbum(images.get(i).getPhoto()[0],images.get(i));
 					 
@@ -177,7 +190,7 @@ public class ImageParser{
 			//parseImages(h+1);
 			e.printStackTrace();
 			current++;
-			parseImages();
+			if (!stop)parseImages();
 		}
 		
 	}
@@ -191,7 +204,7 @@ public class ImageParser{
 		images  = null;
 		System.gc();
 		this.lookForMore();
-		this.parseImages();
+		if(!stop)this.parseImages();
 	}
 	void resetPanel(){
 	//	this.panel.reset();
