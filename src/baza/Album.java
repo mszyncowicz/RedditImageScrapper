@@ -248,8 +248,8 @@ public class Album{
 		}else{
 			double nowaSzer = painting.getWidth();
 			double nowaWyso = painting.getHeight();
-			if (nowaSzer > paint.maxWidth(app.prim.getWidth() - 200)){
-				paint.setFitWidth(app.prim.getWidth() - 200);
+			if (nowaSzer > paint.maxWidth(app.prim.getWidth() - 500)){
+				paint.setFitWidth(app.prim.getWidth() - 500);
 			}else if (nowaWyso > paint.maxHeight(app.prim.getHeight() - 200)){
 				paint.setFitHeight(app.prim.getHeight() - 200);
 			} else {
