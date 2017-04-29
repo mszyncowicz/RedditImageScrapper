@@ -25,9 +25,9 @@ public class ImageParser{
 	private ImagePanel panel;
 	private HtmlPage page1;
 	private int pagenr = 0;
-	private String nextPage;
+	public String nextPage;
 	private String redditPage;
-	private String prevPage;
+	public String prevPage;
 	private boolean stop = false;
 	final int max = 5;
 	int current = 0;
