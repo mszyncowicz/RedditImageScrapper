@@ -52,14 +52,14 @@ public class ImageParser{
 			 e.printStackTrace();
 		 }
 	}
-	void setPage(String reddit){
+	public void setPage(String reddit){
 		this.redditPage = "https://www.reddit.com/r/" + reddit;
 	}
-	void setAuthor(String author){
+	public void setAuthor(String author){
 		this.redditPage = "https://www.reddit.com/user/" + author;
 		System.out.println(author);
 	}
-	void lookFor(){
+	public void lookFor(){
 		try {
 			page1 = webClient
 					.getPage("https://www.reddit.com/r/nsfw/"); //for +18 content <lenny_face>
@@ -79,7 +79,7 @@ public class ImageParser{
 			e.printStackTrace();
 		}
 	}
-	void lookForMore(){
+	public void lookForMore(){
 		try {
 			//parser.rest();
 			pagenr++; //test
@@ -105,7 +105,7 @@ public class ImageParser{
 			//lookForMore();
 		}
 	}
-	void parseImages(){
+	public void parseImages(){
 
 		try {
 			try{
@@ -118,52 +118,32 @@ public class ImageParser{
 				
 				System.out.println(images.get(i).title + 	"pars					" + pagenr	+ "   cur:" + current	+ " " + images.size()	);
 			if (this.panel.getView().getChildren().size() <max) {
-						//System.out.println(images.get(i).url);
 				String a = images.get(i).url;
 				if (a.substring(a.length() - 8).contains(".jpg")
 						|| a.substring(a.length() - 8).contains(".gif")
-						|| a.contains(".png")) {
-					//images.get(i).photoUrl = a;
-					while(a.charAt(a.length()-1) != 'f' && a.charAt(a.length()-1) != 'g'){
+						|| a.contains(".png")|| a.contains(".webm")) {
+	
+					while(a.charAt(a.length()-1) != 'f' && a.charAt(a.length()-1) != 'g' && a.charAt(a.length()-1) != 'm'){
 						a = a.substring(0, a.length()-1);
-						//current++;
-						//continue;
 					}
 					this.panel.addAlbum(a,images.get(i));
 					current++;
 				} else if (images.get(i) instanceof ImgurPhoto || images.get(i) instanceof ImgurAlbum || images.get(i) instanceof TumblrAlbum || images.get(i) instanceof DeviantArt) {
-					//page1 = webClient.getPage(images.get(i).url);
+
 					parser.changeDoc(images.get(i).url,true);
 					System.out.println("przed "+images.get(i).title);
 					
 					panel.addAlbum(images.get(i).getPhoto(),images.get(i));
 					current++;
-					/*
-					new Thread(new Runnable(){
-						public void run(){
-							
-						}
-					}).start();
-					*/
+					
 				}else if (images.get(i) instanceof GfycatGif){
 			
-				
-				//  Pattern gfycat = Pattern.compile("http[s]*:\\/\\/gfycat.com\\/([A-Za-z]+)");
-				//  System.out.println(gfycat.matcher(images.get(i).url).groupCount());
-				//  Matcher m = gfycat.matcher(images.get(i).url);
-				  //if(m.find()){
-//					  String photourl = "https://thumbs.gfycat.com/" +m.group(1) + "-size_restricted.gif";
-					  //String photourl = "https://giant.gfycat.com/" +m.group(1) + ".gif";
-					
-					  //System.out.println(photourl);
+		
 					if(images.get(i).url.contains(".webm")){
 						images.get(i).url = images.get(i).url.substring(0, images.get(i).url.length()-5);
 					}
-				  /*page1 = webClient.getPage(images.get(i).url);
-					parser.changeDoc(page1.getWebResponse()
-							.getContentAsString()); */
+			
 					parser.changeDoc(images.get(i).url,true);
-				 // images.get(i).getPhoto();
 					if(images.get(i).getPhoto()!= null)panel.addAlbum(images.get(i).getPhoto()[0],images.get(i));
 					 
 				 // }
@@ -179,7 +159,7 @@ public class ImageParser{
 				break;
 			}
 			}
-			//current =0;
+
 			if (current >= images.size()-1 && images.size() != 0){
 				current = 0;
 				parser.rest();
@@ -187,7 +167,7 @@ public class ImageParser{
 			}
 		}catch (Exception e) {
 		
-			//parseImages(h+1);
+
 			e.printStackTrace();
 			current++;
 			if (!stop)parseImages();
@@ -195,24 +175,22 @@ public class ImageParser{
 		
 	}
 
-	void rest(){
-		//current = 0;
+	public void rest(){
+
 		parser.reset();
 		this.panel.reset();
 	}
-	void reset(){
+	public void reset(){
 		images  = null;
 		System.gc();
 		this.lookForMore();
 		if(!stop)this.parseImages();
 	}
-	void resetPanel(){
-	//	this.panel.reset();
-	//	this.panel = null;
+	public void resetPanel(){
 		panel = new ImagePanel(this.app);
 		System.gc();
 	}
-	void deleteAll(){
+	public void deleteAll(){
 		this.resetPanel();
 		parser.reset();
 		parser = new RedditParser();
@@ -229,19 +207,19 @@ public class ImageParser{
         webClient.getOptions().setActiveXNative(false);//if you don't need js
 	
 	}
-	void wypisz(String[] album){
+	private void wypisz(String[] album){
 		for (String a : album){
 			System.out.println("      " + a);
 		}
 	}
-	void wypisz(String a){
+	private void wypisz(String a){
 		System.out.println("      " + a);
 		
 	}
-	void setPanel(ImagePanel panel){
+	public void setPanel(ImagePanel panel){
 		this.panel = panel;
 	}
-	ImagePanel getPanel(){
+	public ImagePanel getPanel(){
 		return this.panel;
 	}
 	

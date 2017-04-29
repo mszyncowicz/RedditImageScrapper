@@ -2,6 +2,7 @@ package baza;
 
 
 
+import java.io.File;
 import java.util.ArrayList;
 
 import baza.RedditParser.Link;
@@ -31,148 +32,62 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.*;
 
-
-
-class ImagePanel{
-	
-	VBox container;
-	ImagePanel current;
-	WindowScreen app;
-	void setApp(WindowScreen app){
-		this.app =app;
-	}
-	void setPanel(ImagePanel panel){
-		this.current = panel;
-	}
-	ImagePanel getPanel(){
-		return this.current;
-	}
-	ArrayList<Album> albums;
-	ImagePanel(WindowScreen app){
-		setApp(app);
-		container = new VBox();
-		container.getStyleClass().add("hbox");
-		container.setAlignment(Pos.CENTER);
-		container.setPadding(new Insets(0,0,0,0));
-		albums = new ArrayList<>();
-	}
-	public void addAlbum(String album, Link sz){
-			Album a = new Album(album,app);
-			a.setTitle(sz.title);
-			a.setVote(sz.vote);
-			a.setUrl(sz.url);
-			a.author = sz.author;
-			HBox s = a.getAlbumPane();
-			if (s!=null){
-				setAuthorLink(a,s);
-				container.getChildren().add(s);
-			}
-			albums.add(a);
-			System.out.println("dodadadiadoijaeo " + albums.size());
-
-	}
-	public void addAlbum(String[] album, Link sz){
-		System.out.println( "bla " + sz.title + sz.author );
-		Album a = new Album(album,app);
-		a.setTitle(sz.title);
-		a.setVote(sz.vote);
-		a.setUrl(sz.url);
-		a.author = sz.author;
-		System.out.println(a.title + " " + a.author + " " + sz.title +" " +a.vote );
-		HBox s = a.getAlbumPane();
-		
-		if (s!=null){
-			setAuthorLink(a,s);
-			container.getChildren().add(s);
-		}
-		albums.add(a);
-		System.out.println("dodadadiadoijaeo " + albums.size());
-	}
-	public void addAlbums(ArrayList<Album> albumsy){
-		for( Album a : albumsy){
-			if(a != null){
-				
-				HBox s = a.getAlbumPane();
-				Hyperlink author = a.getAuthorLink();
-				author.setOnAction(e->{
-					app.author = a.author;
-					app.databaseBrowser(app.scroll);
-				});
-				if (s!=null){
-					container.getChildren().add(s);
-				}
-				this.albums.add(a);
-				
-			}
-			
-		}
-		
-	}
-	void setAuthorLink(Album a,HBox s){
-		Hyperlink author = a.getAuthorLink();
-		author.setOnAction(e->{
-			//app.author = a.author;
-			app.startParsing(app.scroll, a.author, true);
-		});
-	}
-	VBox getView(){
-		return this.container;
-	}
-	void setView(VBox cont){
-		this.container = cont;
-	}
-	void createCopy(VBox s){
-		s.getChildren().addAll(container.getChildren());
-
-	}
-	void reset(){
-		this.container = new VBox();
-		container.getStyleClass().add("hbox");
-		container.setAlignment(Pos.CENTER);
-		container.setPadding(new Insets(0,0,0,0));
-		System.out.println("jsfsb " + albums.size());
-		System.out.println("bla");
-		int i = 0;
-		for (Album a : albums){
-			try{
-				System.out.println("bla " + (i++));
-			a.remove();
-			}catch(Exception e){
-				
-			}
-		}
-		System.out.println("bla");
-		albums.removeAll(albums);		
-		System.gc();
-	}
-	
-}
-
-
-
-
-
 public class WindowScreen extends Application{
 	//showgifs;
-	final int max = 20;
-	String author;
-	ImagePanel panel;
-	BazaConnection baza;
-	boolean isNextLoaded = false;
-	BetterScrollPane scroll;
-	Thread main = Thread.currentThread();
-	ImageParser parser;
-	Stage prim;
+	private final int max = 20;
+	private String author;
+	private ImagePanel panel;
+	private BazaConnection baza;
+	private boolean isNextLoaded = false;
+	private BetterScrollPane scroll;
+	private Thread main = Thread.currentThread();
+	private ImageParser parser;
+	private Stage primaryStage;
+	
+	public BazaConnection getBaza() {
+		return baza;
+	}
+
+	public void setBaza(BazaConnection baza) {
+		this.baza = baza;
+	}
+
+	public Stage getPrimaryStage() {
+		return primaryStage;
+	}
+
+	public void setPrimaryStage(Stage primaryStage) {
+		this.primaryStage = primaryStage;
+	}
+
 	public static void main(String[] args) {
+		
 		launch(args);
 	}
 	
-	void setThread(Thread s){
+	public void setThread(Thread s){
 		this.main = s;
 	}
-	Thread getThread(){
+	public Thread getThread(){
 		return main;
 	}
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public BetterScrollPane getScroll() {
+		return scroll;
+	}
+
+	public void setScroll(BetterScrollPane scroll) {
+		this.scroll = scroll;
+	}
+	
+	
 	@Override
 	public void start(Stage primary) throws Exception {
 		primary.setTitle("Reddit Image Scrapper - RIS");
@@ -181,7 +96,7 @@ public class WindowScreen extends Application{
 		//baza.createAll();
 		//baza.newFolder("folder");
 		//baza.setFolder(baza.selectFolder("folder"));
-		prim = primary;
+		primaryStage = primary;
 		scroll = new BetterScrollPane();
 		BorderPane root = new BorderPane();
 		root.setCenter(scroll);
@@ -289,7 +204,10 @@ public class WindowScreen extends Application{
 		});
 
 	}
-	public void alert(String title, String contentText){
+	public void stop(){
+		
+	}
+	private void alert(String title, String contentText){
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle(title);
 		alert.setHeaderText(title);
@@ -312,12 +230,11 @@ public class WindowScreen extends Application{
 		try{
 			if (author == null) panel.getPanel().addAlbums(dbimg.getAlbumy(true));
 			else panel.getPanel().addAlbums(dbimg.getAlbumyByAuthor(true,author));
-			System.out.println(dbimg.current);
 			panel.setView(panel.getPanel().getView());
 			scroll.setContent(panel.getView());
 			scroll.setVvalue(0.0);
 		}catch(NullPointerException e){
-			alert("Folder jest pusty","Brak zawartoœci do wyœwietlenia");
+			alert("Folder jest pusty","Brak zawartoï¿½ci do wyï¿½wietlenia");
 			e.printStackTrace();
 		}
 		Button b = new Button();
@@ -356,7 +273,7 @@ public class WindowScreen extends Application{
 				
 				System.out.println(size);
 				if (size == max) panel.getView().getChildren().add(b);
-				if (dbimg.current >=max) panel.getView().getChildren().add(p);
+				if (dbimg.getCurrent() >=max) panel.getView().getChildren().add(p);
 			}
 		});
 	}
@@ -443,10 +360,8 @@ public class WindowScreen extends Application{
 			
 		});
 	}
-	void buttonAction(){
-		
-	}
-	MenuBar createBookmarkMenu(BazaConnection baza, Button bookmarks){
+
+	private MenuBar createBookmarkMenu(BazaConnection baza, Button bookmarks){
 		MenuBar menuFolder = new MenuBar ();
 		Menu menuFile = new Menu("Bookmarks");
 		menuFolder.getMenus().addAll(menuFile);
@@ -455,17 +370,17 @@ public class WindowScreen extends Application{
 		bookmarks.setDisable(true);
 		MenuItem i = new MenuItem("Add folder");
 		MenuItem j = new MenuItem("Delete folder");
+		MenuItem k = new MenuItem("Add external link");
+		k.setDisable(true);
 		
 		
-		
-		
-		menuFile.getItems().addAll(i,j,separator);
+		menuFile.getItems().addAll(k,i,j,separator);
 		ArrayList<Folder> folders = baza.showFolders();
 		ArrayList<MenuItem> items = new ArrayList<>();
 	
 		if (folders != null) {
 			for (Folder ba : folders) {
-				CheckMenuItem d = new CheckMenuItem(ba.nazwa);
+				CheckMenuItem d = new CheckMenuItem(ba.getNazwa());
 				d.setOnAction(e -> {
 					if (d.isSelected()) {
 
@@ -478,10 +393,12 @@ public class WindowScreen extends Application{
 
 						baza.setFolder(ba);
 						bookmarks.setDisable(false);
+						k.setDisable(false);
 						d.setSelected(true);
 					} else {
 						baza.setFolder(null);
 						bookmarks.setDisable(true);
+						k.setDisable(true);
 						d.setSelected(false);
 					}
 					e.consume();
@@ -500,7 +417,7 @@ public class WindowScreen extends Application{
 				Platform.runLater(new Runnable() {
 					public void run() {
 						Folder nowy = baza.newFolder(name.getText());
-						CheckMenuItem d = new CheckMenuItem(nowy.nazwa);
+						CheckMenuItem d = new CheckMenuItem(nowy.getNazwa());
 						d.setOnAction(g-> {
 							if (d.isSelected()){
 							
@@ -513,10 +430,12 @@ public class WindowScreen extends Application{
 						
 								baza.setFolder(nowy);
 								bookmarks.setDisable(false);
+								k.setDisable(false);
 								d.setSelected(true);
 							}else{
 								baza.setFolder(null);
 								bookmarks.setDisable(true);
+								k.setDisable(true);
 								d.setSelected(false);
 							}
 							g.consume();
@@ -539,7 +458,7 @@ public class WindowScreen extends Application{
 			Platform.runLater(new Runnable() {
 				public void run() {
 			if (baza.getFolder() != null){
-				String folderName = baza.getFolder().nazwa;
+				String folderName = baza.getFolder().getNazwa();
 				Stage stage = new Stage();
 				stage.setResizable(false);
 				TextField name = new TextField("Inser current folder name to delete");
@@ -583,40 +502,78 @@ public class WindowScreen extends Application{
 				}
 			});
 		});
+		k.setOnAction(e->{
+			addExternal();
+			e.consume();
+		});
 		
 		menuFile.getItems().addAll(items);
 		return menuFolder;
 	}
+	private void addExternal(){
+		Stage stage = new Stage();
+		//stage.setResizable(false);
+		Button addMore = new Button("Add more");
+		Button add = new Button("Add link");
+		Label labelForTitle = new Label("Title:");
+		TextField tFForTitle = new TextField("");
+		tFForTitle.setPrefWidth(300);
+		HBox title = new HBox();
+		title.getChildren().addAll(labelForTitle,tFForTitle);
+		
+		ArrayList<TextField> tFForLink = new ArrayList<>();
+		Label labelForLink = new Label("Link:");
+		tFForLink.add(new TextField());
+		tFForLink.get(tFForLink.size()-1).setPrefWidth(300);
+		HBox link = new HBox();
+		link.getChildren().addAll(labelForLink,tFForLink.get(tFForLink.size()-1),addMore);
+		VBox list = new VBox();
+		list.getChildren().add(link);
+		BorderPane root = new BorderPane();
+		BetterScrollPane root1 = new BetterScrollPane();
+		addMore.setOnAction(e->{
+			if (tFForLink.get(tFForLink.size()-1).getText().isEmpty()){
+				alert("Empty field","First put something in previous field");
+			}else if (!tFForLink.get(tFForLink.size()-1).getText().contains(".jpg") && !tFForLink.get(tFForLink.size()-1).getText().contains(".png") && !tFForLink.get(tFForLink.size()-1).getText().contains(".webm") && !tFForLink.get(tFForLink.size()-1).getText().contains(".mp4") && !tFForLink.get(tFForLink.size()-1).getText().contains(".gif")){
+				alert("invalid file format","Format is not Supported");
+			}else{
+				tFForLink.get(tFForLink.size()-1).setDisable(true);
+				TextField nField = new TextField("");
+				nField.setPrefWidth(300);
+				tFForLink.add(nField);
+				HBox link2 = new HBox();
+				link2.getChildren().addAll(new Label("Link:"),nField,addMore);
+				list.getChildren().add(link2);
+			}
+		});
+		
+		add.setOnAction(e->{
+			if(tFForTitle.getText().isEmpty()){
+				alert("No title","Put some title first!");
+			} else{
+				String[] links = new String[tFForLink.size()];
+				int j = 0;
+				for(TextField i : tFForLink){
+					links[j++] = i.getText();
+				}
+				Album a = new Album(links, this);
+				a.setTitle(tFForTitle.getText());
+				a.setUrl(links[0]);
+				baza.insertAlbum(a);
+				stage.close();
+			}
+		});
+		
+		root.setTop(title);
+		root.setCenter(list);
+		root.setBottom(add);
+		root1.setContent(root);
+		Scene scene = new Scene(root1,500, 500);
+		stage.setScene(scene);
+		stage.show();
+	}
 
 
 }
 
 
-
-class BetterScrollPane extends ScrollPane{
-	double x;
-	double y;
-	double lockX;
-	double lockY;
-	double delta = 0 ;
-	boolean lock=false;
-	void setlock(boolean lock){
-		this.lock = lock;
-	}
-	boolean getLock(){
-	
-		return lock;
-	}
-	void setCurrentMousePosition(double x, double y){
-		this.x = x;
-		this.y = y;
-	}
-	void setLockCursor(double x, double y){
-		lockX = x;
-		lockY =y;
-	}
-	void setDelta(){
-		double height = this.getHeight();
-		this.delta = (this.y - this.lockY)/ (height * 100000);
-	}
-}

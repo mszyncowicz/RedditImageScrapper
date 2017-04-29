@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/htmlunit-2.24-OSGi.jar"/>
-	<classpathentry kind="lib" path="lib/jsoup-1.10.2.jar"/>
-	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.40-bin.jar"/>
-	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.14.2.1.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.fx.ide.jdt.core.JAVAFX_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8.0_121"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/htmlparse"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/vlcj"/>
+	<classpathentry kind="lib" path="lib/htmlunit-2.24-OSGi.jar"/>
 	<classpathentry kind="lib" path="lib/jfxtras-labs-2.2-r5.jar"/>
+	<classpathentry kind="lib" path="lib/jna-3.5.2.jar"/>
+	<classpathentry kind="lib" path="lib/jna-4.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jna-platform-4.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jsoup-1.10.2.jar"/>
+	<classpathentry kind="lib" path="lib/libvlc.dll"/>
+	<classpathentry kind="lib" path="lib/libvlccore.dll"/>
+	<classpathentry kind="lib" path="lib/mysql-connector-java-5.1.40-bin.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.10.jar"/>
+	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.14.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/vlcj-2.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/vlcj-3.10.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

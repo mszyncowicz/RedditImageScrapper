@@ -18,10 +18,10 @@ public class BazaConnection {
 			e.printStackTrace();
 		}
 	}
-	boolean hasFolder(){
+	public boolean hasFolder(){
 		return (!(folder == null));
 	}
-	void createAll(){
+	private void createAll(){
 		try {
 			
 			stat.execute("create table if not exists folder(id integer primary key autoincrement, nazwa varchar(255) unique)");
@@ -32,7 +32,7 @@ public class BazaConnection {
 			e.printStackTrace();
 		}
 	}
-	void dropAll(){
+	private void dropAll(){
 		try {
 			
 			stat.execute("drop table if exists album");
@@ -43,13 +43,13 @@ public class BazaConnection {
 			e.printStackTrace();
 		}
 	}
-	void setFolder(Folder folder){
+	public void setFolder(Folder folder){
 		this.folder = folder;
 	}
-	Folder getFolder(){
+	public Folder getFolder(){
 		return folder;
 	}
-	ArrayList<Folder> showFolders(){
+	public ArrayList<Folder> showFolders(){
 
 		ArrayList<Folder> folders = null;
 		try {
@@ -78,7 +78,7 @@ public class BazaConnection {
 		}
 		return folders;
 	}
-	Folder newFolder(String name){
+	public Folder newFolder(String name){
 		Folder nowy = null;
 		try {
 			stat = myConn.createStatement();
@@ -103,7 +103,7 @@ public class BazaConnection {
 		}
 		return nowy;
 	}
-	Folder selectFolder(String name){
+	public Folder selectFolder(String name){
 		Folder nowy = null;
 		try {
 			stat = myConn.createStatement();
@@ -122,10 +122,10 @@ public class BazaConnection {
 		}
 		return nowy;
 	}
-	void deleteFolder (Folder folder){
+	public void deleteFolder (Folder folder){
 		try {
 			stat = myConn.createStatement();
-			stat.execute("delete from folder where id = '" + folder.id + "'");
+			stat.execute("delete from folder where id = '" + folder.getId() + "'");
 			stat.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -146,9 +146,9 @@ public class BazaConnection {
 	boolean insertAlbum(Album photos){
 		try {
 			//najpierw album
-			photos.title = photos.title.replaceAll("'", "''");
+			photos.setTitle( photos.getTitle().replaceAll("'", "''"));
 			stat = myConn.createStatement();
-			stat.execute("insert into album(title,mainurl,author,folderid) values ('"+ photos.title +"','"+ photos.url +"','"+ photos.author +"',"+ folder.id +")");
+			stat.execute("insert into album(title,mainurl,author,folderid) values ('"+ photos.getTitle() +"','"+ photos.getUrl() +"','"+ photos.getAuthor() +"',"+ folder.getId() +")");
 			ResultSet generatedKeys = stat.executeQuery("SELECT last_insert_rowid()");
 			Integer id;
 			if (generatedKeys.next()) {
@@ -158,7 +158,7 @@ public class BazaConnection {
 			}
 			myConn.setAutoCommit(false);
 			PreparedStatement insert = myConn.prepareStatement("insert into zdjecie(photoUrl,albumid) values(?,?)");
-			for (String a : photos.album){
+			for (String a : photos.getAlbum()){
 				insert.setString(1, a);
 				insert.setInt(2,id);
 				insert.addBatch();
@@ -175,12 +175,12 @@ public class BazaConnection {
 			return false;
 		}
 	}
-	boolean isInFolder(Album a){
+	public boolean isInFolder(Album a){
 		if (folder == null) return false;
 		else{
 			try {
 				stat = myConn.createStatement();
-				ResultSet set = stat.executeQuery("SELECT id FROM album WHERE mainurl ='"+a.url+"' and folderid = "+ folder.id);
+				ResultSet set = stat.executeQuery("SELECT id FROM album WHERE mainurl ='"+a.getUrl()+"' and folderid = "+ folder.getId());
 				if (set.next()){
 					set.getInt(1);
 					stat.close();
@@ -197,11 +197,11 @@ public class BazaConnection {
 		}
 		
 	}
-	ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset){
+	public ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset){
 		ArrayList<Album> albumy = null;
 		try {
 			stat = myConn.createStatement();
-			ResultSet albums = stat.executeQuery("select * from album where folderid  = " + folder.id + " order by id desc LIMIT " + limit.toString() + " OFFSET " + offset.toString());
+			ResultSet albums = stat.executeQuery("select * from album where folderid  = " + folder.getId() + " order by id desc LIMIT " + limit.toString() + " OFFSET " + offset.toString());
 			while(albums.next()){
 				/*Dla ka¿dego albumu:
 				 * 1. wyjmij title,mainurl
@@ -238,14 +238,14 @@ public class BazaConnection {
 					nowy = new Album(album[0],app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
-					nowy.author = author;
+					nowy.setAuthor(author);
 				}else if(sum > 1){
 					nowy = new Album(album,app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
-					nowy.author = author;
+					nowy.setAuthor(author);
 				}else{
-					System.out.println("Bie utworzono");
+					System.out.println("Nie utworzono");
 				}
 				if (album != null && albumy != null){
 					albumy.add(nowy);
@@ -262,7 +262,7 @@ public class BazaConnection {
 		}
 		return albumy;
 	}
-	ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset, String query){
+	public ArrayList<Album> getAlbums(WindowScreen app, Integer limit, Integer offset, String query){
 		ArrayList<Album> albumy = null;
 		try {
 			stat = myConn.createStatement();
@@ -303,12 +303,12 @@ public class BazaConnection {
 					nowy = new Album(album[0],app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
-					nowy.author = author;
+					nowy.setAuthor(author);
 				}else if(sum > 1){
 					nowy = new Album(album,app);
 					nowy.setTitle(title);
 					nowy.setUrl(url);
-					nowy.author = author;
+					nowy.setAuthor(author);
 				}else{
 					System.out.println("Bie utworzono");
 				}

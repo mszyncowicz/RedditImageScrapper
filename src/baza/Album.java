@@ -25,6 +25,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -36,290 +37,277 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import jfxtras.labs.util.event.MouseControlUtil;
 
-public class Album{
-	String[] album;
-	boolean isZoomed = false;
-	HBox box;
-	String author;
-	int current = 0;
-	Image painting;
-	ImageView paint;
-	Scene scene;
-	Button button1;
-	Button button2;
-	Button like;
-	String title,url;
-	Integer vote;
-	boolean isFav = false;
-	boolean isAlbum = true;
-	Media media;
-	File f;
-	Hyperlink authorLink;
-	MediaView viewer;
-	WindowScreen app;
-	boolean isPlaying = false;
-	StackPane viewerWrapper;
-	javafx.scene.media.MediaPlayer player;
-	boolean isVideo = false;
-	Album(WindowScreen app){
-		setApp(app);
-	}
-	void setPainting(){
-			try {
-				paint = new ImageView();
-				paint.setPreserveRatio(true);
-				paint.setFitWidth(500);
-				paint.maxHeight(app.prim.getHeight());
-				paint.maxWidth(app.prim.getWidth());
-			} catch (Exception e) {
 
-				current = -1;
-			}
+public class Album {
+	private String[] album;
+	private int current = 0;
+	private Integer vote;
+	private String author;
+	private String title, url;
 
-	}
-	void setApp(WindowScreen app){
-		this.app = app;
-	}
-	void setPhoto (String photo){
-		if (photo.substring(photo.length()-4).contains(".gif")){
-
-			try {
-				this.painting = new Image(photo,true);
-				System.gc();
-				
-			} catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
-			}
-			
-		}else if (photo.contains(".mp4")){
-			try {
-				
-				if (photo.charAt(4) == 's'){
-					photo = photo.substring(5);
-					photo = "http" + photo;
 	
-				}
-				this.media = new Media(new URL(photo).toURI().toURL().toString());
-			    player = new javafx.scene.media.MediaPlayer(media);
-			    System.out.println("odtwarzam " + photo);
-			    
-			    this.viewer = new MediaView(player);
-			    isVideo = true;
-			} catch (Exception e) {
-						// TODO: handle exception
-				e.printStackTrace();
-			}
-			
-		}else{
-			painting = new Image(photo,true);
-			paint = new ImageView(painting);
-			paint.setPreserveRatio(true);
-			paint.maxHeight(app.prim.getHeight());
-			paint.maxWidth(app.prim.getWidth());
-			paint.setFitWidth(500);
-			//isAlbum = false;
-		}
-		
-		
-	}
-	Album(String photo,WindowScreen app){
+	
+	private Button buttonNext;
+	private Button buttonPrev;
+	private Button buttonLike;
+	private HBox albumPane;
+	private StackPane viewerWrapper;
+
+	private Hyperlink authorLink;
+	private Label playButton;
+	
+	private WindowScreen app;
+	
+	private MediaNode media;
+	
+	private boolean isZoomed = false;
+	private boolean isFav = false;
+	private boolean isAlbum = true;
+	private boolean debug = true;
+	private boolean isPlaying = false;
+	private boolean isVideo = false;
+	
+	final double widthSetting = 800;
+	
+	public Album(String photo, WindowScreen app) {
 		setApp(app);
 		isAlbum = false;
 		this.album = new String[1];
 		this.album[0] = photo;
 		System.out.println("to: " + photo);
-		if(photo != null) this.setPhoto(photo);
+		this.viewerWrapper = new StackPane();
+		if (photo != null) this.setPhoto(photo);
 	}
-	Album(String[] album,WindowScreen app){
-		setApp(app);
-		if (album.length <2) isAlbum = false;
-		this.album = album;
-		
-		if(album[0] != null) this.setPhoto(album[0]);
-	}
-	void remove(){
-		try{ 
-			System.out.println(this.url);
-			album = null;
-			if (!isVideo){
-				System.out.println("nie vid");
-				this.painting.cancel();
-				this.paint.setImage(null);
-			}else{
-				System.out.println("vid");
-				javafx.scene.media.MediaPlayer s = this.player;
-				
 
-				//this.player.stop();
-				System.out.println("vid");
-				this.player = null;
-				new Thread(new Runnable(){
-					
-					public void run(){
-						s.dispose();
-					}
-					
-				}).start();
-				this.player = null;
-				System.out.println("vid");
-				this.viewer =null;
-				
-	
-				System.out.println("usuwam " +album[current]);
-				
-				
+	public Album(String[] album, WindowScreen app) {
+		setApp(app);
+		if (album.length < 2)
+			isAlbum = false;
+		this.album = album;
+		this.viewerWrapper = new StackPane();
+		if (album[0] != null)
+			this.setPhoto(album[0]);
+	}
+
+	public String[] getAlbum() {
+		return album;
+	}
+
+	public void setAlbum(String[] album) {
+		this.album = album;
+	}
+
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setAuthorLink(Hyperlink authorLink) {
+		this.authorLink = authorLink;
+	}
+
+	Album(WindowScreen app) {
+		setApp(app);
+	}
+
+	public void setApp(WindowScreen app) {
+		this.app = app;
+	}
+
+	public void setPhoto(String photo) {
+		System.out.println(photo);
+		if (photo.contains(".mp4")) {
+			try {
+				media = new VideoNode(viewerWrapper, photo, 700, 0 ,app.getPrimaryStage());
+				media.setUp();
+				isVideo = true;
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-			this.album = null;
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
-		
-		//System.gc();
-	}
-	int next(){
-		if (current+1 == album.length){
-			current =0;
-		}else{
-			current++;
-		}
-		painting = new Image(album[current]);
-		this.setImage(painting);
-		System.out.println(album[current] +" " + album.length);
-		return current;
-	}
-	void setImage(Image a){
-		Timeline timeline1 = new Timeline();
-		Timeline timeline2 = new Timeline();
-		timeline1.getKeyFrames().addAll(
-				new KeyFrame(Duration.ZERO,
-						new KeyValue(paint.opacityProperty(),1)
-				
-				 ),new KeyFrame(Duration.millis(300),
-							new KeyValue(paint.opacityProperty(),0)));
-		timeline2.getKeyFrames().addAll(
-				new KeyFrame(Duration.ZERO,
-						new KeyValue(paint.opacityProperty(),0)
-				
-				 ),new KeyFrame(Duration.millis(200),
-							new KeyValue(paint.opacityProperty(),1)));
-		timeline1.setOnFinished(e -> {
-			paint.setImage(a);
-			timeline2.play();
-		});
-		timeline1.play();
-		
-	}
-	int prev(){
-		if(current-1 <0){
-			current = album.length-1;
+
 		} else {
-			current--;
-		}
-		System.out.println(album[current] +" " + album.length);
-		painting = new Image(album[current],500,0,true,false);
-		this.setImage(painting);
-		return current;
-	}
-	ImageView getImageView(){
-		return paint;
-	}
-	void setUrl(String url){
-		this.url= url;
-	}
-	void setTitle(String title){
-		this.title = title;
-	}
-	void setVote(Integer vote){
-		this.vote = vote;
-	}
-	boolean isZoomed(){
-		return isZoomed;
-	}
-	Hyperlink getAuthorLink(){
-		return this.authorLink;
-	}
-	void zoom(){
-		if(isZoomed){
-			paint.setFitWidth(500);
-			isZoomed = false;
-			System.out.println(this.album[current]);
-		}else{
-			double nowaSzer = painting.getWidth();
-			double nowaWyso = painting.getHeight();
-			if (nowaSzer > paint.maxWidth(app.prim.getWidth() - 500)){
-				paint.setFitWidth(app.prim.getWidth() - 500);
-			}else if (nowaWyso > paint.maxHeight(app.prim.getHeight() - 200)){
-				paint.setFitHeight(app.prim.getHeight() - 200);
-			} else {
-				paint.setFitWidth(painting.getWidth());
+			try{
+				media = new ImageNode(viewerWrapper, photo, 700, 0 ,app.getPrimaryStage());
+				media.setUp();
+			}catch (Exception e){
+				e.printStackTrace();
 			}
 			
-			isZoomed = true;
 		}
 		
 	}
-	HBox getAlbumPane(){
-		button1 = new Button();
-		button2 = new Button();
-		button1.setText("next");
-		button2.setText("prev");
-		like = new Button();
-		like.setText("+");
+
+	
+
+	public void remove() {
+		try {
+			media.dispose();
+			this.album = null;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// System.gc();
+	}
+
+	private int next() {
+		do {
+			if (current + 1 == album.length) {
+				current = 0;
+			} else {
+				current++;
+			}
+		} while (album[current].isEmpty());
+		prepareForPhotoChange();
+		return current;
+	}
+
+	private void prepareForPhotoChange() {
+		if (!isVideo) {
+			if (album[current].contains(".jpg")
+					|| album[current].contains(".gif")
+					|| album[current].contains(".png")) {
+				Platform.runLater(new Runnable() {
+					public void run() {
+						try {
+							media.setNext(album[current]);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
+
+				});
+			} else {
+				media.dispose();
+				setPhoto(album[current]);
+			}
+
+		}
+		else {
+			if (album[current].contains(".mp4")){
+				Platform.runLater(new Runnable() {
+					public void run() {
+						try {
+							media.setNext(album[current]);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
+
+				});
+			} else {
+				isVideo = false;
+				media.dispose();
+				setPhoto(album[current]);
+			}
+		}
+
+		System.out.println(current + " " + album.length);
+
+	}
+
+	private int prev() {
+		do {
+			if (current - 1 < 0) {
+				current = album.length - 1;
+			} else {
+				current--;
+			}
+		} while (album[current].isEmpty());
+		prepareForPhotoChange();
+		return current;
+	}
+
+	
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public void setVote(Integer vote) {
+		this.vote = vote;
+	}
+
+	public boolean isZoomed() {
+		return isZoomed;
+	}
+
+	public Hyperlink getAuthorLink() {
+		return this.authorLink;
+	}
+
+	
+
+	public HBox getAlbumPane() {
+		buttonNext = new Button();
+		buttonPrev = new Button();
+		buttonNext.setText("next");
+		buttonPrev.setText("prev");
+		buttonLike = new Button();
+		buttonLike.setText("+");
 		Button download = new Button();
-		button1.setMinWidth(200);
-		button2.setMinWidth(200);
-		VBox vbox = new VBox();
-		
-		HBox hbox = new HBox();
-		vbox.setAlignment(Pos.CENTER);
+		buttonNext.setMinWidth(200);
+		buttonPrev.setMinWidth(200);
+		VBox albumBox = new VBox();
+
+		albumPane = new HBox();
+		albumBox.setAlignment(Pos.CENTER);
 
 		Label title = new Label();
 		title.setText(this.title);
 		title.setId("Title");
-		
+
 		Hyperlink url = new Hyperlink();
 		url.setText(this.url);
 		url.setOnAction(t -> {
-		    app.getHostServices().showDocument(url.getText());
+			app.getHostServices().showDocument(url.getText());
 		});
 		url.setId("Url");
 		Label vote = null;
-		if (this.author!= null){
+		if (this.author != null) {
 			authorLink = new Hyperlink();
-			
+
 			authorLink.setText(this.author.toString());
 			authorLink.setId("Vote");
-			vbox.setId("Content");
+			albumBox.setId("Content");
 		}
-		
+
 		Album a = this;
-		vbox.getChildren().addAll(title);
-		if (this.author != null){
-			vbox.getChildren().addAll(authorLink);
+		albumBox.getChildren().addAll(title);
+		if (this.author != null) {
+			albumBox.getChildren().addAll(authorLink);
 		}
-		if (!this.isVideo){
-			this.viewerWrapper = new StackPane();
-			this.viewerWrapper.getChildren().add(this.getImageView());
-			vbox.getChildren().add(this.viewerWrapper);
-		} else{
-			this.viewerWrapper = new StackPane();
-			this.viewerWrapper.getChildren().add(this.viewer);
-			vbox.getChildren().add(this.viewerWrapper);
-			
-		}
-		like.setId("Like");
-		like.setOnAction(e-> {
-			
-			Platform.runLater(new Runnable(){
+		albumBox.getChildren().add(this.viewerWrapper);
+		
+		buttonLike.setId("Like");
+
+		buttonLike.setOnAction(e -> {
+
+			Platform.runLater(new Runnable() {
 				@Override
-				public void run(){
-					if (app.baza.hasFolder()){
-						if (!app.baza.isInFolder(a)){
-							if(app.baza.insertAlbum(a)){
-								like.setStyle("-fx-text-fill:Crimson;-fx-font-size: 12px; ");
-							}else{
+				public void run() {
+					if (app.getBaza().hasFolder()) {
+						if (!app.getBaza().isInFolder(a)) {
+							if (app.getBaza().insertAlbum(a)) {
+								buttonLike.setStyle("-fx-text-fill:Crimson;-fx-font-size: 12px; ");
+							} else {
 								Alert alert = new Alert(AlertType.INFORMATION);
 								alert.setTitle("Error");
 								alert.setHeaderText("Database Error!!");
@@ -327,10 +315,10 @@ public class Album{
 
 								alert.showAndWait();
 							}
-						}else{
-							if(app.baza.deleteAlbum(a.url)){
-								like.setStyle("-fx-text-fill:black; -fx-font-size: 18px");
-							}else{
+						} else {
+							if (app.getBaza().deleteAlbum(a.url)) {
+								buttonLike.setStyle("-fx-text-fill:black; -fx-font-size: 18px");
+							} else {
 								Alert alert = new Alert(AlertType.INFORMATION);
 								alert.setTitle("Error");
 								alert.setHeaderText("Database Error!!");
@@ -339,8 +327,8 @@ public class Album{
 								alert.showAndWait();
 							}
 						}
-						
-					} else{
+
+					} else {
 						Alert alert = new Alert(AlertType.INFORMATION);
 						alert.setTitle("No folder selected");
 						alert.setHeaderText("No folder selected");
@@ -348,217 +336,113 @@ public class Album{
 
 						alert.showAndWait();
 					}
-					hbox.getParent().requestFocus();
+					albumPane.getParent().requestFocus();
 
 				}
 			});
 			e.consume();
 		});
-		
+
 		download.setText("\u25BC");
 		download.setId("Like");
-		download.setOnAction(e->{
+		download.setOnAction(e -> {
 			new Thread(new Runnable() {
 				public void run() {
+					String path = System.getProperty("user.dir").toString();
+					String folder = "/Downloads/picvids/";
+					new File(path + folder).mkdirs();
+					
+					
 					try {
-						//using current folder
-						String path = System.getProperty("user.dir").toString();
-						String folder = "/Downloads/";
-						new File(path + folder).mkdirs();
+					
+						
 						URL zet = new URL(a.album[current]);
-						File sa = new File(path + folder + zet.getFile());
+						String fpath = zet.getFile().replace('/', '1');
+						File sa = new File(path + folder + fpath);
+						System.out.println(sa.getAbsolutePath());
 						sa.createNewFile();
 						FileUtils.copyURLToFile(zet, sa);
 						System.out.println(sa.getAbsolutePath());
 					} catch (Exception e2) {
-						// TODO: handle exception						
+				
+						
 						e2.printStackTrace();
 					}
 				}
 			}).start();
-			hbox.getParent().requestFocus();
+			albumPane.getParent().requestFocus();
 		});
-		HBox list= new HBox();
-		list.getChildren().addAll(like,download);
+		HBox actionBarForLikesAndDownloads = new HBox();
+		actionBarForLikesAndDownloads.getChildren().addAll(buttonLike, download);
 		this.viewerWrapper.setOnMouseEntered(e -> {
-			Platform.runLater(new Runnable(){
+			Platform.runLater(new Runnable() {
 				@Override
-				public void run(){
-					viewerWrapper.getChildren().add(list);
-					StackPane.setAlignment(list, Pos.TOP_LEFT);
-					if (app.baza.isInFolder(a)){
-						like.setStyle("-fx-text-fill:Crimson; ");
-					} else{
-						like.setStyle("-fx-font-size: 18px;");
+				public void run() {
+					viewerWrapper.getChildren().add(actionBarForLikesAndDownloads);
+					StackPane.setAlignment(actionBarForLikesAndDownloads, Pos.TOP_LEFT);
+					if (app.getBaza().isInFolder(a)) {
+						buttonLike.setStyle("-fx-text-fill:Crimson; ");
+					} else {
+						buttonLike.setStyle("-fx-font-size: 18px;");
 					}
-					
+
 				}
 			});
 			e.consume();
 		});
 		this.viewerWrapper.setOnMouseExited(e -> {
-			this.viewerWrapper.getChildren().remove(list);
+			this.viewerWrapper.getChildren().remove(actionBarForLikesAndDownloads);
 			e.consume();
 		});
-		
-		
-		
-		button1.setOnAction(e -> {
-		
-			Thread t = new Thread(new Runnable(){
+
+		buttonNext.setOnAction(e -> {
+
+			Thread t = new Thread(new Runnable() {
 				@Override
-				public void run(){
+				public void run() {
 					next();
-				
+
 				}
 			});
 			t.start();
 			e.consume();
 		});
-		button2.setOnAction(e -> {
-		
-			Thread t = new Thread(new Runnable(){
+		buttonPrev.setOnAction(e -> {
+
+			Thread t = new Thread(new Runnable() {
 				@Override
-				public void run(){
+				public void run() {
 					prev();
-				
+
 				}
 			});
 			t.start();
 			e.consume();
 		});
 
+		albumPane.setAlignment(Pos.CENTER);
+
+		albumBox.getChildren().add(url);
+		albumBox.setMaxHeight(600);
+		albumBox.setMaxWidth(widthSetting);
+		// layout.getChildren().add(layout);
+		if (this.isAlbum) {
+			albumPane.getChildren().add(buttonPrev);
+			albumPane.getChildren().add(albumBox);
+			albumPane.getChildren().add(buttonNext);
+		} else albumPane.getChildren().add(albumBox);
+
+		albumPane.setMaxSize(widthSetting, 600);
 		
-		hbox.setAlignment(Pos.CENTER);
+		 
 		
-		
-		
-		vbox.getChildren().add(url);
-		vbox.setMaxHeight(600);
-		vbox.setMaxWidth(500);
-		//layout.getChildren().add(layout);
-		if (this.isAlbum){
-			hbox.getChildren().add(button2);
-			hbox.getChildren().add(vbox);
-			hbox.getChildren().add(button1);
-		} else hbox.getChildren().add(vbox);
-		
-		
-		hbox.setMaxSize(500, 600);
-		if (!this.isVideo){
-			//this.viewerWrapper.setOnMouseEntered(e-> hbox.setCursor(Cursor.CLOSED_HAND));
-			//this.viewerWrapper.setOnMouseExited(e-> hbox.setCursor(Cursor.DEFAULT));
-			
-			this.viewerWrapper.setOnMouseClicked(e -> {
-				if (!album[current].contains(".gif"))
-					this.zoom();
-				else{
-					try {
-						Stage stage = new Stage();
-						stage.setTitle("Gif player");
-			            ImageView nowy = new ImageView();
-			            StackPane s = new StackPane();
-			            s.getChildren().add(nowy);
-			            
-			            
-					 	new Thread(new Runnable(){
-					 		@Override
-							public void run(){
-					 			System.out.println("yo");
-					            Image gif = new Image(album[current]);
-					            
-					            nowy.setImage(gif);
-					            stage.setHeight(gif.getHeight());
-					            stage.setWidth(gif.getWidth());
-					            
-					 		}
-					 	}).start();
-					 	
-			            //Image gif = new Image(album[current]);
-			            Scene as = new Scene(s, 200,200);
-			            s.prefHeightProperty().bind(as.heightProperty());
-			            s.prefWidthProperty().bind(as.widthProperty());
-			            nowy.fitWidthProperty().bind(s.widthProperty());
-			            nowy.fitHeightProperty().bind(s.heightProperty());
-			            nowy.setPreserveRatio(true);
-			            stage.setScene(as);
-			            stage.show();
-			            
-			        }
-			        catch (Exception ed) {
-			            ed.printStackTrace();
-			        }
-				}
-				e.consume();
-			});
-		}else{
-			this.viewerWrapper.prefHeightProperty().bind(this.viewer.fitHeightProperty());
-			this.viewerWrapper.prefWidthProperty().bind(this.viewer.fitWidthProperty());
-			this.viewerWrapper.setMaxSize(app.prim.getMaxWidth(), app.prim.getMaxHeight());
-			Label label = new Label("\u25B6");
-			label.setFont(new Font(150));
-			//label.setStyle("-fx-text-fill:yellow;");
-		//previus color	ALICEBLUE
-			//color.
-			label.setStyle("-fx-text-fill: #ff1e6d;  -fx-border-insets: 2 0 0 0; -fx-border-width: 2; -fx-effect: dropshadow( gaussian , Black , 0,0,3,3 );");
-			this.viewerWrapper.getChildren().add(label);
-			this.viewer.setPreserveRatio(true);
-			this.viewer.setFitWidth(500);
-			label.setMouseTransparent(true);
-			player.setOnError(new Runnable(){
-    	    	public void run(){
-    	    		viewerWrapper.getChildren().remove(label);
-    	    		Label error = new Label ("Video is corrupted");
-    	    		viewerWrapper.getChildren().add(error);
-    	    		player.dispose();
-  
-    	    	}
-    	    });
-			this.viewerWrapper.setOnMouseClicked(e -> {
-				if(e.getButton().equals(MouseButton.PRIMARY)){
-			 		 if (e.getClickCount()== 2){
-			 			 if (this.isZoomed){
-			 				isZoomed = false;
-			 				this.viewer.setFitWidth(500);
-			 			 }else{
-			 				 this.isZoomed = true;
-			 				this.viewer.setFitWidth(1200);
-			 			 }
-			 		 }
-			 		 if(play()) this.viewerWrapper.getChildren().remove(label);
-			 		 else this.viewerWrapper.getChildren().add(label);
-			 	 } else{
-			 		 this.player.stop();
-			 	 }
-			 	 
-			 	 
-				e.consume();
-			});
-			
-		}
-		//MouseControlUtil.makeDraggable(this.viewerWrapper);
-		
-		this.viewerWrapper.setOnDragDetected(e->{
-			e.consume();
-		});
-		hbox.setPadding(new Insets(0,0,0,0));
-		vbox.setPadding(new Insets(0,0,0,0));
-		box = hbox;
-		return hbox;
-	}
-	
-	boolean play(){
-		if (!isPlaying){
-			isPlaying = true;
-			player.play();
-			System.out.println(isPlaying);
-			player.setCycleCount(MediaPlayer.INDEFINITE);
-		}else{
-			isPlaying = false;
-			player.pause();
-		}
-		return isPlaying;
+		// MouseControlUtil.makeDraggable(this.viewerWrapper);
+
+		albumPane.setPadding(new Insets(0, 0, 0, 0));
+		albumBox.setPadding(new Insets(0, 0, 0, 0));
+		albumPane = albumPane;
+		return albumPane;
 	}
 
-	
+
 }
