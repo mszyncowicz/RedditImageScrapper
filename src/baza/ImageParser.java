@@ -18,17 +18,17 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 
 
 public class ImageParser{
-	WindowScreen app;
-	ArrayList<Link> images;
-	RedditParser parser;
-	WebClient webClient;
-	ImagePanel panel;
-	HtmlPage page1;
-	int pagenr = 0;
-	String nextPage;
-	String redditPage;
-	String prevPage;
-	boolean stop = false;
+	public WindowScreen app;
+	private ArrayList<Link> images;
+	private RedditParser parser;
+	private WebClient webClient;
+	private ImagePanel panel;
+	private HtmlPage page1;
+	private int pagenr = 0;
+	private String nextPage;
+	private String redditPage;
+	private String prevPage;
+	private boolean stop = false;
 	final int max = 5;
 	int current = 0;
 	ImageParser(WindowScreen app){
@@ -203,6 +203,7 @@ public class ImageParser{
 	 	webClient.getOptions().setCssEnabled(false);//if you don't need css
         webClient.getOptions().setJavaScriptEnabled(false);
         webClient.getOptions().setGeolocationEnabled(false);//if you don't need js
+        // I dont know why but github is crazy here with indentations
         webClient.getOptions().setAppletEnabled(false);
         webClient.getOptions().setActiveXNative(false);//if you don't need js
 	
