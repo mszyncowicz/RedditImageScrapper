@@ -152,7 +152,7 @@ class RedditParser extends URLParser{
 					result[i] = "https://i.imgur.com/" + e.get(i).attr("id") + ".jpg";
 				}
 				for (int j = 0; j<es.size();j++){
-					result[j + e.size()] = "https://i.imgur.com/" + es.get(j).attr("id") + ".gif";
+					result[j + e.size()] = "https://i.imgur.com/" + es.get(j).attr("id") + ".mp4";
 				}
 				this.photoUrl = result;
 				return result;

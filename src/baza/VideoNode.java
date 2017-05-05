@@ -29,12 +29,13 @@ public class VideoNode extends MediaNode {
 	}
 	@Override
 	public void setUp() throws MalformedURLException, URISyntaxException {
-		setVideo();
+		
 		playButton = new Label("\u25B6");
 		playButton.setFont(new Font(150));
 		playButton.setMouseTransparent(true);
 		playButton.setStyle("-fx-text-fill: #ff1e6d;  -fx-border-insets: 2 0 0 0; -fx-border-width: 2; -fx-effect: dropshadow( gaussian , Black , 0,0,3,3 );");
-		
+		setVideo();
+		onClick();
 	}
 
 	@Override
@@ -100,6 +101,7 @@ public class VideoNode extends MediaNode {
 			url = "http" + url;
 
 		}
+		System.out.println(url + " blablabla");
 		while (url.charAt(url.length() - 1) != '4') {
 			url = url.substring(0, url.length() - 1);
 		}
@@ -107,6 +109,7 @@ public class VideoNode extends MediaNode {
 				.toString());
 		player = new javafx.scene.media.MediaPlayer(media);
 		this.viewer = new MediaView(player);
+		this.viewer.setFitWidth(widthSetting);
 		player.setOnError(new Runnable() {
 			public void run() {
 				viewerWrapper.getChildren().remove(playButton);
@@ -117,6 +120,9 @@ public class VideoNode extends MediaNode {
 
 			}
 		});
+		viewerWrapper.getChildren().add(viewer);
+		viewerWrapper.getChildren().add(playButton);
+		
 	}
 
 }

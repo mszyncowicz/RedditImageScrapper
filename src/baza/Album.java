@@ -37,7 +37,6 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import jfxtras.labs.util.event.MouseControlUtil;
 
-
 public class Album {
 	private String[] album;
 	private int current = 0;
@@ -45,8 +44,6 @@ public class Album {
 	private String author;
 	private String title, url;
 
-	
-	
 	private Button buttonNext;
 	private Button buttonPrev;
 	private Button buttonLike;
@@ -55,20 +52,20 @@ public class Album {
 
 	private Hyperlink authorLink;
 	private Label playButton;
-	
+
 	private WindowScreen app;
-	
+
 	private MediaNode media;
-	
+
 	private boolean isZoomed = false;
 	private boolean isFav = false;
 	private boolean isAlbum = true;
 	private boolean debug = true;
 	private boolean isPlaying = false;
 	private boolean isVideo = false;
-	
+
 	final double widthSetting = 800;
-	
+
 	public Album(String photo, WindowScreen app) {
 		setApp(app);
 		isAlbum = false;
@@ -76,7 +73,8 @@ public class Album {
 		this.album[0] = photo;
 		System.out.println("to: " + photo);
 		this.viewerWrapper = new StackPane();
-		if (photo != null) this.setPhoto(photo);
+		if (photo != null)
+			this.setPhoto(photo);
 	}
 
 	public Album(String[] album, WindowScreen app) {
@@ -129,26 +127,27 @@ public class Album {
 		System.out.println(photo);
 		if (photo.contains(".mp4")) {
 			try {
-				media = new VideoNode(viewerWrapper, photo, 700, 0 ,app.getPrimaryStage());
+				media = new VideoNode(viewerWrapper, photo, 700, 0,
+						app.getPrimaryStage());
 				media.setUp();
+
 				isVideo = true;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 
 		} else {
-			try{
-				media = new ImageNode(viewerWrapper, photo, 700, 0 ,app.getPrimaryStage());
+			try {
+				media = new ImageNode(viewerWrapper, photo, 700, 0,
+						app.getPrimaryStage());
 				media.setUp();
-			}catch (Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-		}
-		
-	}
 
-	
+		}
+
+	}
 
 	public void remove() {
 		try {
@@ -158,7 +157,7 @@ public class Album {
 			e.printStackTrace();
 		}
 
-		// System.gc();
+		System.gc();
 	}
 
 	private int next() {
@@ -185,7 +184,7 @@ public class Album {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-						
+
 					}
 
 				});
@@ -194,9 +193,8 @@ public class Album {
 				setPhoto(album[current]);
 			}
 
-		}
-		else {
-			if (album[current].contains(".mp4")){
+		} else {
+			if (album[current].contains(".mp4")) {
 				Platform.runLater(new Runnable() {
 					public void run() {
 						try {
@@ -204,7 +202,7 @@ public class Album {
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-						
+
 					}
 
 				});
@@ -231,8 +229,6 @@ public class Album {
 		return current;
 	}
 
-	
-
 	public void setUrl(String url) {
 		this.url = url;
 	}
@@ -252,8 +248,6 @@ public class Album {
 	public Hyperlink getAuthorLink() {
 		return this.authorLink;
 	}
-
-	
 
 	public HBox getAlbumPane() {
 		buttonNext = new Button();
@@ -295,7 +289,7 @@ public class Album {
 			albumBox.getChildren().addAll(authorLink);
 		}
 		albumBox.getChildren().add(this.viewerWrapper);
-		
+
 		buttonLike.setId("Like");
 
 		buttonLike.setOnAction(e -> {
@@ -306,7 +300,8 @@ public class Album {
 					if (app.getBaza().hasFolder()) {
 						if (!app.getBaza().isInFolder(a)) {
 							if (app.getBaza().insertAlbum(a)) {
-								buttonLike.setStyle("-fx-text-fill:Crimson;-fx-font-size: 12px; ");
+								buttonLike
+										.setStyle("-fx-text-fill:Crimson;-fx-font-size: 12px; ");
 							} else {
 								Alert alert = new Alert(AlertType.INFORMATION);
 								alert.setTitle("Error");
@@ -317,7 +312,8 @@ public class Album {
 							}
 						} else {
 							if (app.getBaza().deleteAlbum(a.url)) {
-								buttonLike.setStyle("-fx-text-fill:black; -fx-font-size: 18px");
+								buttonLike
+										.setStyle("-fx-text-fill:black; -fx-font-size: 18px");
 							} else {
 								Alert alert = new Alert(AlertType.INFORMATION);
 								alert.setTitle("Error");
@@ -351,11 +347,9 @@ public class Album {
 					String path = System.getProperty("user.dir").toString();
 					String folder = "/Downloads/picvids/";
 					new File(path + folder).mkdirs();
-					
-					
+
 					try {
-					
-						
+
 						URL zet = new URL(a.album[current]);
 						String fpath = zet.getFile().replace('/', '1');
 						File sa = new File(path + folder + fpath);
@@ -364,8 +358,7 @@ public class Album {
 						FileUtils.copyURLToFile(zet, sa);
 						System.out.println(sa.getAbsolutePath());
 					} catch (Exception e2) {
-				
-						
+
 						e2.printStackTrace();
 					}
 				}
@@ -373,25 +366,31 @@ public class Album {
 			albumPane.getParent().requestFocus();
 		});
 		HBox actionBarForLikesAndDownloads = new HBox();
-		actionBarForLikesAndDownloads.getChildren().addAll(buttonLike, download);
+		actionBarForLikesAndDownloads.getChildren()
+				.addAll(buttonLike, download);
 		this.viewerWrapper.setOnMouseEntered(e -> {
 			Platform.runLater(new Runnable() {
 				@Override
 				public void run() {
-					viewerWrapper.getChildren().add(actionBarForLikesAndDownloads);
-					StackPane.setAlignment(actionBarForLikesAndDownloads, Pos.TOP_LEFT);
-					if (app.getBaza().isInFolder(a)) {
-						buttonLike.setStyle("-fx-text-fill:Crimson; ");
-					} else {
-						buttonLike.setStyle("-fx-font-size: 18px;");
+					if (!viewerWrapper.getChildren().contains(
+							actionBarForLikesAndDownloads)) {
+						viewerWrapper.getChildren().add(
+								actionBarForLikesAndDownloads);
+						StackPane.setAlignment(actionBarForLikesAndDownloads,
+								Pos.TOP_LEFT);
+						if (app.getBaza().isInFolder(a)) {
+							buttonLike.setStyle("-fx-text-fill:Crimson; ");
+						} else {
+							buttonLike.setStyle("-fx-font-size: 18px;");
+						}
 					}
-
 				}
 			});
 			e.consume();
 		});
 		this.viewerWrapper.setOnMouseExited(e -> {
-			this.viewerWrapper.getChildren().remove(actionBarForLikesAndDownloads);
+			this.viewerWrapper.getChildren().remove(
+					actionBarForLikesAndDownloads);
 			e.consume();
 		});
 
@@ -430,12 +429,11 @@ public class Album {
 			albumPane.getChildren().add(buttonPrev);
 			albumPane.getChildren().add(albumBox);
 			albumPane.getChildren().add(buttonNext);
-		} else albumPane.getChildren().add(albumBox);
+		} else
+			albumPane.getChildren().add(albumBox);
 
 		albumPane.setMaxSize(widthSetting, 600);
-		
-		 
-		
+
 		// MouseControlUtil.makeDraggable(this.viewerWrapper);
 
 		albumPane.setPadding(new Insets(0, 0, 0, 0));
@@ -443,6 +441,5 @@ public class Album {
 		albumPane = albumPane;
 		return albumPane;
 	}
-
 
 }

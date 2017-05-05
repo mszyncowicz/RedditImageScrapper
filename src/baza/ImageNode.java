@@ -10,8 +10,8 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class ImageNode extends MediaNode {
-	private Image painting;
-	private ImageView paint;
+	private Image image;
+	private ImageView imageView;
 	private String url;
 	
 
@@ -23,22 +23,22 @@ public class ImageNode extends MediaNode {
 	}
 	@Override
 	public void setUp() throws Exception {
-		paint = new ImageView();
-		paint.setPreserveRatio(true);
-		paint.setFitWidth(widthSetting);
-		paint.maxHeight(heightSetting);
-		paint.maxWidth(widthSetting);
+		imageView = new ImageView();
+		imageView.setPreserveRatio(true);
+		imageView.setFitWidth(widthSetting);
+		imageView.maxHeight(heightSetting);
+		imageView.maxWidth(widthSetting);
 		setPhoto();
+		onClick();
 		
 	}
 
 	@Override
 	public void dispose() {
-		this.viewerWrapper.getChildren().remove(paint);
-		paint = null;
-		this.painting.cancel();
-		painting= null;
-
+		this.viewerWrapper.getChildren().remove(imageView);
+		this.image.cancel();
+		//this.imageView = null;
+		this.image = null;
 	}
 
 	@Override
@@ -52,6 +52,7 @@ public class ImageNode extends MediaNode {
 	}
 	@Override
 	public void setNext(String url) throws Exception {
+		dispose();
 		setImage(new Image(url));
 		
 	}
@@ -59,25 +60,27 @@ public class ImageNode extends MediaNode {
 		while (url.charAt(url.length() - 1) != 'g' && url.charAt(url.length() - 1) != 'f') {
 			url = url.substring(0, url.length() - 1);
 		}
-		painting = new Image(url, true);
-		paint.setImage(painting);
-		viewerWrapper.getChildren().add(paint);
-		viewerWrapper.setMaxHeight(paint.getFitHeight());
+		image = new Image(url, true);
+		imageView.setImage(image);
+		viewerWrapper.getChildren().add(imageView);
+		viewerWrapper.setMaxHeight(imageView.getFitHeight());
 	}
 	
 	private void zoom() {
 		if (isZoomed) {
-			paint.setFitWidth(widthSetting);
+			imageView.setFitWidth(widthSetting);
 			isZoomed = false;
 		} else {
-			double newWidth = painting.getWidth();
-			double newHeight = painting.getHeight();
-			if (newWidth > paint.maxWidth(this.currentStage.getMaxWidth()- 500)) {
-				paint.setFitWidth(this.currentStage.getMaxWidth()- 500);
-			} else if (newHeight > paint.maxHeight(this.currentStage.getMaxHeight() - 200)) {
-				paint.setFitHeight(this.currentStage.getMaxHeight() - 200);
+			double newWidth = image.getWidth();
+			double newHeight = image.getHeight();
+			if (newWidth > imageView.maxWidth(this.currentStage.getMaxWidth()- 500)) {
+				imageView.setFitWidth(image.getWidth()-500);
+			//	imageView.setFitWidth(this.currentStage.getMaxWidth()- 500);
+			} else if (newHeight > imageView.maxHeight(this.currentStage.getMaxHeight() - 200)) {
+				imageView.setFitHeight(image.getHeight()-200);
+			//	imageView.setFitHeight(this.currentStage.getMaxHeight() - 200);
 			} else {
-				paint.setFitWidth(painting.getWidth());
+				imageView.setFitWidth(image.getWidth());
 			}
 
 			isZoomed = true;
@@ -85,25 +88,26 @@ public class ImageNode extends MediaNode {
 
 	}
 	private void setImage(Image a) {
+		this.image =a;
 		Timeline timeline1 = new Timeline();
 		Timeline timeline2 = new Timeline();
 		timeline1.getKeyFrames().addAll(
 				new KeyFrame(Duration.ZERO, new KeyValue(
-						paint.opacityProperty(), 1)
+						imageView.opacityProperty(), 1)
 
 				),
-				new KeyFrame(Duration.millis(300), new KeyValue(paint
+				new KeyFrame(Duration.millis(300), new KeyValue(imageView
 						.opacityProperty(), 0)));
 		timeline2.getKeyFrames().addAll(
 				new KeyFrame(Duration.ZERO, new KeyValue(
-						paint.opacityProperty(), 0)
+						imageView.opacityProperty(), 0)
 
 				),
-				new KeyFrame(Duration.millis(200), new KeyValue(paint
+				new KeyFrame(Duration.millis(200), new KeyValue(imageView
 						.opacityProperty(), 1)));
 		timeline1.setOnFinished(e -> {
-			paint.setImage(a);
-			paint.setFitWidth(widthSetting);
+			imageView.setImage(a);
+			imageView.setFitWidth(widthSetting);
 			isZoomed = false;
 			timeline2.play();
 		});
