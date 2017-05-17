@@ -52,7 +52,7 @@ class RedditParser extends URLParser{
 				   }
 				   //System.out.println(vote);
 				   if (vote >= 0){
-					   if (a.contains(".jpg") || a.contains(".png") || a.contains(".gif") || a.contains(".mp4")|| a.contains(".webm")){
+					   if (a.contains(".jpg") || a.contains(".png") || (a.contains(".gif")  && !a.contains("giphy"))|| a.contains(".mp4")|| a.contains(".webm")){
 					   //System.out.println(vote);
 						   urls.add(new Link(a,vote, title,author));
 					   } else if (a.contains("imgur.com/a/") || a.contains("imgur.com/gallery/")){
@@ -70,10 +70,12 @@ class RedditParser extends URLParser{
 						   urls.add(new RedUpload(a,vote, title,author));
 					
 					   }
-					    else if (a.contains("deviantart")){
+					   else if (a.contains("deviantart")){
 					    	urls.add(new DeviantArt(a,vote, title,author));
 						   
-					   }
+					   }else if(a.contains("giphy")){
+						   urls.add(new Giphy(a, vote, title, author));
+					   
 				   }
 				   
 			   }
