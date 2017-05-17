@@ -120,8 +120,8 @@ public class ImageParser{
 			if (this.panel.getView().getChildren().size() <max) {
 				String a = images.get(i).url;
 				if (a.substring(a.length() - 8).contains(".jpg")
-						|| a.substring(a.length() - 8).contains(".gif")
-						|| a.contains(".png")|| a.contains(".webm")) {
+						|| (a.substring(a.length() - 8).contains(".gif") && !a.contains("giphy"))
+						|| a.contains(".png")) {
 	
 					while(a.charAt(a.length()-1) != 'f' && a.charAt(a.length()-1) != 'g' && a.charAt(a.length()-1) != 'm'){
 						a = a.substring(0, a.length()-1);
@@ -152,7 +152,10 @@ public class ImageParser{
 				}else if (images.get(i) instanceof RedUpload){
 					panel.addAlbum(images.get(i).getPhoto(),images.get(i));
 					current++;
-				}
+				}else if (images.get(i) instanceof Giphy){
+						parser.changeDoc(images.get(i).url, true);
+						panel.addAlbum(images.get(i).getPhoto(), images.get(i));
+					}
 			} 
 			else{
 				System.out.println("koniec!");
