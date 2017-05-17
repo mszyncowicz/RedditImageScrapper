@@ -237,4 +237,21 @@ class RedditParser extends URLParser{
 			return result;
 		}
 	}
+	class Giphy extends Link{
+		private String photoUrl;
+		Giphy(String url,Integer vote,String title, String author){
+			super(url,vote, title, author);
+		}
+		@Override
+		public String[] getPhoto(){
+			String[] result = new String[1];
+			Elements e = doc.getElementsByClass("gif");
+			result[0] = e.get(0).attr("src");
+			result[0] = "http:" + result[0];
+			result[0] = result[0].substring(0, result[0].length()-3);
+			result[0] += "mp4";
+			photoUrl = result[0];
+			return result;
+		}
+	}
 }
